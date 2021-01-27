@@ -1,1 +1,3 @@
 # FireMaze
+
+Benton is dumb  

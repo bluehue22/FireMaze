@@ -1,5 +1,3 @@
 # FireMaze
 
-# Benton is dumb 
-
-## NO TANDREW IS DUMDUM
+###### BENTON'S BOOBS ARE FLAT 

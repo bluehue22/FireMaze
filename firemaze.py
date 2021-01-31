@@ -12,7 +12,13 @@ def mazePrint(maze,mazelength):
         print("")
         for j in range(mazelength):
             print(maze[i][j].status,end=" ")
-
+            
+def isValid(row, col):  # checks if row col is a valid place to move
+    if row >= mazelength or row < 0 or col >= mazelength or col < 0: # is it out of bounds?
+        return False
+    if maze[row][col].status == "open" and maze[row][col].visit == "no": # is it on fire?
+        return True
+    return False
 
 mazelength = 0
 density = -1

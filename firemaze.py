@@ -1,12 +1,53 @@
-from numpy import zeros as zeros
 import random
 
 class MazeUnit:
     def __init__(self,status,visit):
         self.status = status
         self.visit = visit
+class Node:
+    def __init__(self, data=None, parent=None, child = None):
+        self.data = data
+        self.parent = parent
+        self.child = child
+        
+class Stack:
+    def __init__(self, top):
+        self.top = top
+    
+    def push(node):
+        # IN PROGRESS
+        
+def listPrint(ptr):
+    while ptr.parent != None:
+        print(ptr.data)
+        ptr = ptr.parent
+    print(ptr.data)
+        
+def makeMaze(): # might want to make it so it can return mazelength and density
+    mazelength = 0
+    density = -1
 
+    while mazelength <= 1:
+        mazelength = int(input("Enter size length of the maze: "))  # what is size is <1
+        if mazelength <= 1:
+            print("Number invalid try again")
 
+    while density < 0 or density > 1:
+        density = float(input("Enter density: "))
+        if density < 0 or density > 1:
+            print("Number invalid try again")
+
+    maze = [[MazeUnit("open", "no") for j in range(mazelength)] for i in range(mazelength)]
+
+    for i in range(mazelength):  # fill with obstacles
+        for j in range(mazelength):
+            if random.random() <= density:
+                maze[i][j] = MazeUnit("bloc", "no")
+
+    maze[0][0].status = "open"  # hardcode top left
+    maze[mazelength - 1][mazelength - 1].status = "open"  # hardcode bottom right
+    return (maze)
+    
 def mazePrint(maze,mazelength):
     for i in range(mazelength):
         print("")
@@ -20,52 +61,13 @@ def isValid(row, col):  # checks if row col is a valid place to move
         return True
     return False
 
-mazelength = 0
-density = -1
-
-while mazelength <= 1:
-    mazelength = int(input("Enter size length of the maze: "))  # what is size is <1
-    if mazelength <= 1:
-        print("Number invalid try again")
-
-while density < 0 or density > 1:
-    density = float(input("Enter density: "))
-    if density < 0 or density > 1:
-        print("Number invalid try again")
-
-maze = [[MazeUnit("open","no") for j in range(mazelength)] for i in range(mazelength)]
-
-for i in range(mazelength):  # fill with obstacles
-    for j in range(mazelength):
-        if random.random() <= density:
-            maze[i][j] = MazeUnit("bloc","no")
-
-maze[0][0].status = "open"  # hardcode top left
-maze[mazelength - 1][mazelength - 1].status = "open"  # hardcode bottom right
-
 
 # Problem 2: Write DFS algorithm, generate 'obstacle density p' vs 'probability that S can be reached from G' plot
-class Node:
-    def __init__(self, data=None, parent=None, child = None):
-        self.data = data
-        self.parent = parent
-        self.child = child
 
-
-class Stack:
-    def __init__(self, top):
-        self.top = top
-    
-    def push(node):
-        # IN PROGRESS
 
 
 # Prints node list (path from goal to start)
-def listPrint(ptr):
-    while ptr.parent != None:
-        print(ptr.data)
-        ptr = ptr.parent
-    print(ptr.data)
+
 
 
 # Recursive DFS execution, updating a visitedSet with a node created from nodeCoord
@@ -96,7 +98,7 @@ def DFS(maze, mazelength, loc1, loc2):
 #         return BFS(maze,Node(sx, sy + 1,curr,None),gx,gy)
 
 
-def BFS(maze, startNode, gx, gy): # no A yet
+def BFS(maze, startNode, gx, gy):
     fringe = []
     fringe.append(startNode)
     while len(fringe) != 0:  # while fringe isnt emty
@@ -104,15 +106,15 @@ def BFS(maze, startNode, gx, gy): # no A yet
         # if goal found return the goal, tracking trough parents will give path
         if curr.x == gx and curr.y == gy:
             return curr
-            break # you are done searching so get out I hope this is right
+            break # wait 
         if isValid(curr.x - 1, curr.y):  # add all valid neighbors to fringe
-            fringe.add(Node(curr.x - 1, curr.y, curr, None))
+            fringe.append(Node(curr.x - 1, curr.y, curr, None))
         if isValid(curr.x + 1, curr.y):
-            fringe.add(Node(curr.x + 1, curr.y, curr, None))
+            fringe.append(Node(curr.x + 1, curr.y, curr, None))
         if isValid(curr.x, curr.y - 1):
-            fringe.add(Node(curr.x, curr.y - 1, curr, None))
+            fringe.append(Node(curr.x, curr.y - 1, curr, None))
         if isValid(curr.x, curr.y + 1):
-            fringe.add(Node(curr.x, curr.y + 1, curr, None))
+            fringe.append(Node(curr.x, curr.y + 1, curr, None))
     return None
 
 r1 = Node((0, 0),None)

@@ -4,19 +4,16 @@ class MazeUnit:
     def __init__(self,status,visit):
         self.status = status
         self.visit = visit
+
 class Node:
-    def __init__(self, data=None, parent=None, child = None):
-        self.data = data
+    def __init__(self, x=None, y=None, parent=None, child=None):
+        self.x = x
+        self.y = y
         self.parent = parent
         self.child = child
-        
-class Stack:
-    def __init__(self, top):
-        self.top = top
-    
-    def push(node):
-        # IN PROGRESS
-        
+
+
+# Prints node list (path from goal to start)
 def listPrint(ptr):
     while ptr.parent != None:
         print(ptr.data)
@@ -63,22 +60,13 @@ def isValid(row, col):  # checks if row col is a valid place to move
 
 
 # Problem 2: Write DFS algorithm, generate 'obstacle density p' vs 'probability that S can be reached from G' plot
+# Recursive DFS execution from (x,y)
+def execDFS(maze,x,y):
+    node = Node(x,y,None,None)
 
-
-
-# Prints node list (path from goal to start)
-
-
-
-# Recursive DFS execution, updating a visitedSet with a node created from nodeCoord
-def DFSexecutor(maze,mazelength,visitedSet,stack,nodeCoord):
-    node = Node(nodeCoord,None)
-
-
-def DFS(maze, mazelength, loc1, loc2):
+def DFS(maze,sx,sy,gx,gy):
     # Start at (x,y), check (x+1,y) then (y+1,x) ... want to reach (v,w)
-    visitedSet = None
-    stack = None
+    stack = []
     
    # THIS IS DFS
 # def notBFS(maze,curr,gx,gy):

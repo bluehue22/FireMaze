@@ -77,6 +77,43 @@ def DFS(maze, mazelength, loc1, loc2):
     # Start at (x,y), check (x+1,y) then (y+1,x) ... want to reach (v,w)
     visitedSet = None
     stack = None
+    
+   # THIS IS DFS
+# def notBFS(maze,curr,gx,gy):
+#     # start = Node(sx,sy,None,None)
+#     # curr = start
+#     # fringe = []
+#     if (curr.x = gx and curr.y = gy): # if at target
+#         return curr
+
+#     if up = isValid(sx - 1, sy):
+#         return BFS(maze,Node(sx - 1, sy,curr,None),gx,gy)
+#     if down = isValid(sx + 1, sy):
+#         return BFS(maze,Node(sx + 1, sy,curr,None),gx,gy)
+#     if left = isValid(sx, sy - 1):
+#         return BFS(maze,Node(sx, sy - 1,curr,None),gx,gy)
+#     if right = isValid(sx, sy + 1):
+#         return BFS(maze,Node(sx, sy + 1,curr,None),gx,gy)
+
+
+def BFS(maze, startNode, gx, gy): # no A yet
+    fringe = []
+    fringe.append(startNode)
+    while len(fringe) != 0:  # while fringe isnt emty
+        curr = fringe.pop(0)
+        # if goal found return the goal, tracking trough parents will give path
+        if curr.x == gx and curr.y == gy:
+            return curr
+            break # you are done searching so get out I hope this is right
+        if isValid(curr.x - 1, curr.y):  # add all valid neighbors to fringe
+            fringe.add(Node(curr.x - 1, curr.y, curr, None))
+        if isValid(curr.x + 1, curr.y):
+            fringe.add(Node(curr.x + 1, curr.y, curr, None))
+        if isValid(curr.x, curr.y - 1):
+            fringe.add(Node(curr.x, curr.y - 1, curr, None))
+        if isValid(curr.x, curr.y + 1):
+            fringe.add(Node(curr.x, curr.y + 1, curr, None))
+    return None
 
 r1 = Node((0, 0),None)
 r2 = Node((1, 0),r1)

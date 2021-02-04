@@ -6,11 +6,13 @@ class MazeUnit:
         self.visit = visit # yes, no, on
 
 class Node:
-    def __init__(self, x=None, y=None, parent=None, child=None):
+    def __init__(self, x, y, parent=None, child=None, movesTaken=0, movesLeft=0):
         self.x = x
         self.y = y
         self.parent = parent
         self.child = child
+        self.movesTaken = movesTaken
+        self.movesLeft = movesLeft
 
 
 # Prints node list (path from goal to start) #! Modifiable
@@ -92,26 +94,86 @@ def DFS(maze,mazelength,sx,sy,gx,gy):
 
 ## Problem 3: Write BFS and A* algorithms, generate avg '# nodes explored by BFS - # nodes explored by A*' vs 'obstacle density p' plot
 # if path from start node to goal coord then this will send back the node of goal whose parent chain reveals path, if no path then returns None
+def AstarDist(sx, sy, gx, gy):
+    x = gy - sy
+    y = gx - sx
+    c = math.sqrt(x ** 2 + y ** 2)
+    return c
+
 def BFS(maze, startNode, gx, gy):
     fringe = []
+    startNode.moves = 0
     fringe.append(startNode)
+    maze[startNode.x][startNode.y].visit = "yes"
     # while fringe isnt emty
     while len(fringe) != 0:
         curr = fringe.pop(0)
-        maze[curr.x][curr.y].visit = "yes"
+
         # if goal found return the goal, tracking trough parents will give path
         if curr.x == gx and curr.y == gy:
             return curr
         # add all valid neighbors to fringe, up down left right
-        if isValid(maze, curr.x - 1, curr.y):
-            fringe.append(Node(curr.x - 1, curr.y, curr, None))
-        if isValid(maze, curr.x + 1, curr.y):
-            fringe.append(Node(curr.x + 1, curr.y, curr, None))
-        if isValid(maze, curr.x, curr.y - 1):
-            fringe.append(Node(curr.x, curr.y - 1, curr, None))
-        if isValid(maze, curr.x, curr.y + 1):
-            fringe.append(Node(curr.x, curr.y + 1, curr, None))
+        up = curr.x - 1
+        down = curr.x + 1
+        left = curr.y - 1
+        right = curr.y + 1
+        if isValid(maze, up, curr.y):
+            fringe.append(
+                Node(
+                    up,
+                    curr.y,
+                    curr,
+                    None,
+                    curr.movesTaken + 1,
+                    AstarDist(up, curr.y, gx, gy),
+                )
+            )
+            maze[up][curr.y].visit = "yes"
+
+        if isValid(maze, down, curr.y):
+            fringe.append(
+                Node(
+                    down,
+                    curr.y,
+                    curr,
+                    None,
+                    curr.movesTaken + 1,
+                    AstarDist(down, curr.y, gx, gy),
+                )
+            )
+            maze[down][curr.y].visit = "yes"
+        if isValid(maze, curr.x, left):
+            fringe.append(
+                Node(
+                    curr.x,
+                    left,
+                    curr,
+                    None,
+                    curr.movesTaken + 1,
+                    AstarDist(curr.x, left, gx, gy),
+                )
+            )
+            maze[curr.x][left].visit = "yes"
+        if isValid(maze, curr.x, right):
+            fringe.append(
+                Node(
+                    curr.x,
+                    right,
+                    curr,
+                    None,
+                    curr.movesTaken + 1,
+                    AstarDist(curr.x, right, gx, gy),
+                )
+            )
+            maze[curr.x][right].visit = "yes"
+
+        fringe.sort(key=lambda Node: (Node.movesTaken + Node.movesLeft))
+    # for testing purposes
+        #for i in fringe:
+        #    print(i.x, i.y, i.movesTaken, i.movesLeft, i.movesTaken + i.movesLeft)
+        #print("--------------------")
     return None
+
 
 
 ## Beginning of main code segment

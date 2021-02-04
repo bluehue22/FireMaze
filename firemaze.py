@@ -2,8 +2,8 @@ import random
 
 class MazeUnit:
     def __init__(self,status,visit):
-        self.status = status
-        self.visit = visit
+        self.status = status # open, bloc, fire
+        self.visit = visit # yes, no, on
 
 class Node:
     def __init__(self, x=None, y=None, parent=None, child=None):
@@ -13,7 +13,7 @@ class Node:
         self.child = child
 
 
-# Prints node list (path from goal to start)
+# Prints node list (path from goal to start) #! Modifiable
 def listPrint(ptr):
     while ptr.parent != None:
         print(ptr.x,ptr.y)
@@ -26,40 +26,71 @@ def mazePrint(maze,mazelength):
         for j in range(mazelength):
             print(maze[i][j].status,end=" ")
             
-def isValid(row, col):  # checks if row col is a valid place to move
-    if row >= mazelength or row < 0 or col >= mazelength or col < 0: # is it out of bounds?
+def isValid(maze,mazelength,x,y):  # checks if (x,y) is a valid place to move
+    if (x >= mazelength or x < 0 or y >= mazelength or y < 0): # is it out of bounds?
         return False
-    if maze[row][col].status == "open" and maze[row][col].visit == "no": # is it on fire?
+    if maze[x][y].status == "open" and maze[x][y].visit == "no": # is it on fire?
         return True
     return False
 
+# Returns array of up/down/left/right in priority search order
+def directionPrio(sx,sy,gx,gy):
+    deltaX = gx-sx
+    deltaY = gy-sy
+    if deltaX > 0: # right
+        if deltaY > 0:
+            if abs(deltaX)>abs(deltaY):
+                return ["r","d","u","l"]
+            else:
+                return ["d","r","l","u"]
+        else:
+            if abs(deltaX)>abs(deltaY):
+                return ["r","u","d","l"]
+            else:
+                return ["u","r","l","d"]
+    else: # left (and if deltaX = 0)
+        if deltaY > 0:
+            if abs(deltaX)>abs(deltaY):
+                return ["l","d","u","r"]
+            else:
+                return ["d","l","r","u"]
+        else:
+            if abs(deltaX)>abs(deltaY):
+                return ["l","u","d","r"]
+            else:
+                return ["u","l","r","d"]
 
-# Problem 2: Write DFS algorithm, generate 'obstacle density p' vs 'probability that S can be reached from G' plot
-# Recursive DFS execution from (x,y)
-def execDFS(maze,x,y):
-    node = Node(x,y,None,None)
 
-def DFS(maze,sx,sy,gx,gy):
-    # Start at (x,y), check (x+1,y) then (y+1,x) ... want to reach (v,w)
+## Problem 2: Write DFS algorithm, generate 'obstacle density p' vs 'probability that S can be reached from G' plot
+# DFS execution
+def DFS(maze,mazelength,sx,sy,gx,gy):
+    # Start at (sx,sy), check (x+1,y) then (y+1,x) ... want to reach (gx,gy)
+    startNode = Node(sx,sy,None,None)
     stack = []
+    stack.append(startNode)
+    prioQ = directionPrio(sx,sy,gx,gy)
     
-   # THIS IS DFS
-# def notBFS(maze,curr,gx,gy):
-#     # start = Node(sx,sy,None,None)
-#     # curr = start
-#     # fringe = []
-#     if (curr.x = gx and curr.y = gy): # if at target
-#         return curr
+    while len(stack) != 0: # While stack isn't empty
+        node = stack.pop()
+        maze[node.x][node.y].visit = "yes"
+        if node.x == gx and node.y == gy:
+            return True
+        for i in reversed(prioQ): # Append new nodes to stack in (reverse) order, lower prio appended first
+            if i=="r":
+                if isValid(maze,mazelength,node.x+1,node.y):
+                    stack.append(Node(node.x+1,node.y,node,None))
+            elif i=="l":
+                if isValid(maze,mazelength,node.x-1,node.y):
+                    stack.append(Node(node.x-1,node.y,node,None))
+            elif i=="u":
+                if isValid(maze,mazelength,node.x,node.y-1):
+                    stack.append(Node(node.x,node.y-1,node,None))
+            else:
+                if isValid(maze,mazelength,node.x,node.y+1):
+                    stack.append(Node(node.x,node.y+1,node,None))
+    return False
 
-#     if up = isValid(sx - 1, sy):
-#         return BFS(maze,Node(sx - 1, sy,curr,None),gx,gy)
-#     if down = isValid(sx + 1, sy):
-#         return BFS(maze,Node(sx + 1, sy,curr,None),gx,gy)
-#     if left = isValid(sx, sy - 1):
-#         return BFS(maze,Node(sx, sy - 1,curr,None),gx,gy)
-#     if right = isValid(sx, sy + 1):
-#         return BFS(maze,Node(sx, sy + 1,curr,None),gx,gy)
-
+## Problem 3: Write BFS and A* algorithms, generate avg '# nodes explored by BFS - # nodes explored by A*' vs 'obstacle density p' plot
 # if path from start node to goal coord then this will send back the node of goal whose parent chain reveals path, if no path then returns None
 def BFS(maze, startNode, gx, gy):
     fringe = []
@@ -82,9 +113,10 @@ def BFS(maze, startNode, gx, gy):
             fringe.append(Node(curr.x, curr.y + 1, curr, None))
     return None
 
+
+## Beginning of main code segment
 mazelength = 0
 density = -1
-
 
 while mazelength <= 1:
     mazelength = int(input("Enter size length of the maze: "))  # what is size is <1
@@ -108,13 +140,11 @@ for i in range(mazelength):  # fill with obstacles
         if random.random() <= density:
             maze[i][j] = MazeUnit("bloc", "no")
 
-maze[0][0].status = "open"  # hardcode top left
-maze[mazelength - 1][mazelength - 1].status = "open"  # hardcode bottom right
+maze[0][0].status = "open"  # hardcode top left to be open
+maze[mazelength - 1][mazelength - 1].status = "open"  # hardcode bottom right to be open
 
-
-r1 = Node((0, 0),None)
-r2 = Node((1, 0),r1)
-listPrint(r2)
-
-
-# Problem 3: Write BFS and A* algorithms, generate avg '# nodes explored by BFS - # nodes explored by A*' vs 'obstacle density p' plot
+## DFS TEST CODE BELOW
+# mazePrint(maze,mazelength)
+# reachable = DFS(maze,mazelength,sx,sy,gx,gy)
+# print("\n")
+# print(reachable)

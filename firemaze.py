@@ -20,31 +20,6 @@ def listPrint(ptr):
         ptr = ptr.parent
     print(ptr.x,ptr.y)
         
-def makeMaze(): # might want to make it so it can return mazelength and density
-    mazelength = 0
-    density = -1
-
-    while mazelength <= 1:
-        mazelength = int(input("Enter size length of the maze: "))  # what is size is <1
-        if mazelength <= 1:
-            print("Number invalid try again")
-
-    while density < 0 or density > 1:
-        density = float(input("Enter density: "))
-        if density < 0 or density > 1:
-            print("Number invalid try again")
-
-    maze = [[MazeUnit("open", "no") for j in range(mazelength)] for i in range(mazelength)]
-
-    for i in range(mazelength):  # fill with obstacles
-        for j in range(mazelength):
-            if random.random() <= density:
-                maze[i][j] = MazeUnit("bloc", "no")
-
-    maze[0][0].status = "open"  # hardcode top left
-    maze[mazelength - 1][mazelength - 1].status = "open"  # hardcode bottom right
-    return (maze)
-    
 def mazePrint(maze,mazelength):
     for i in range(mazelength):
         print("")
@@ -85,7 +60,7 @@ def DFS(maze,sx,sy,gx,gy):
 #     if right = isValid(sx, sy + 1):
 #         return BFS(maze,Node(sx, sy + 1,curr,None),gx,gy)
 
-
+# if path from start node to goal coord then this will send back the node of goal whose parent chain reveals path, if no path then returns None
 def BFS(maze, startNode, gx, gy):
     fringe = []
     fringe.append(startNode)
@@ -106,6 +81,36 @@ def BFS(maze, startNode, gx, gy):
         if isValid(maze, curr.x, curr.y + 1):
             fringe.append(Node(curr.x, curr.y + 1, curr, None))
     return None
+
+mazelength = 0
+density = -1
+
+
+while mazelength <= 1:
+    mazelength = int(input("Enter size length of the maze: "))  # what is size is <1
+    if mazelength <= 1:
+        print("Number invalid try again")
+
+while density < 0 or density > 1:
+    density = float(input("Enter density: "))
+    if density < 0 or density > 1:
+        print("Number invalid try again")
+
+sx = 0
+sy = 0
+gx = mazelength - 1
+gy = mazelength - 1
+
+maze = [[MazeUnit("open", "no") for j in range(mazelength)] for i in range(mazelength)]
+
+for i in range(mazelength):  # fill with obstacles
+    for j in range(mazelength):
+        if random.random() <= density:
+            maze[i][j] = MazeUnit("bloc", "no")
+
+maze[0][0].status = "open"  # hardcode top left
+maze[mazelength - 1][mazelength - 1].status = "open"  # hardcode bottom right
+
 
 r1 = Node((0, 0),None)
 r2 = Node((1, 0),r1)

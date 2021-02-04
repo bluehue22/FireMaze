@@ -1,6 +1,6 @@
 import random
 import math
-
+import matplotlib.pyplot as plt
 
 class MazeUnit:
     def __init__(self, status, visit):

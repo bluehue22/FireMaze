@@ -2,6 +2,7 @@ import random
 import math
 import matplotlib.pyplot as plt
 
+
 class MazeUnit:
     def __init__(self, status, visit):
         self.status = status  # open, bloc, fire
@@ -110,7 +111,7 @@ def AstarDist(sx, sy, gx, gy):
     return c
 
 
-def BFSwithA(maze, startNode, gx, gy):
+def A(maze, startNode, gx, gy):
     fringe = []
     startNode.moves = 0
     fringe.append(startNode)

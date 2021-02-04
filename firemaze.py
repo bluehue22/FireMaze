@@ -189,7 +189,7 @@ def A(maze, startNode, gx, gy):
 def BFS(maze, startNode, gx, gy):
     fringe = []
     fringe.append(startNode)
-    maze[start.x][start.y].visit = "yes"
+    maze[startNode.x][startNode.y].visit = "yes"
     # while fringe isnt emty
     while len(fringe) != 0:
         curr = fringe.pop(0)

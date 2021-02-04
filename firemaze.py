@@ -1,4 +1,5 @@
 import random
+import math
 
 
 class MazeUnit:
@@ -126,7 +127,7 @@ def BFS(maze, startNode, gx, gy):
         down = curr.x + 1
         left = curr.y - 1
         right = curr.y + 1
-        if isValid(maze, up, curr.y):
+        if isValid(maze, mazelength, up, curr.y):
             fringe.append(
                 Node(
                     up,
@@ -139,7 +140,7 @@ def BFS(maze, startNode, gx, gy):
             )
             maze[up][curr.y].visit = "yes"
 
-        if isValid(maze, down, curr.y):
+        if isValid(maze, mazelength, down, curr.y):
             fringe.append(
                 Node(
                     down,
@@ -151,7 +152,7 @@ def BFS(maze, startNode, gx, gy):
                 )
             )
             maze[down][curr.y].visit = "yes"
-        if isValid(maze, curr.x, left):
+        if isValid(maze, mazelength, curr.x, left):
             fringe.append(
                 Node(
                     curr.x,
@@ -163,7 +164,7 @@ def BFS(maze, startNode, gx, gy):
                 )
             )
             maze[curr.x][left].visit = "yes"
-        if isValid(maze, curr.x, right):
+        if isValid(maze, mazelength, curr.x, right):
             fringe.append(
                 Node(
                     curr.x,
@@ -219,3 +220,4 @@ maze[mazelength - 1][mazelength - 1].status = "open"  # hardcode bottom right to
 # print("\n")
 # print(reachable)
 # benton is a lil hoe
+# benton is a big hoe

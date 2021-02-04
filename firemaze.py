@@ -110,7 +110,7 @@ def AstarDist(sx, sy, gx, gy):
     return c
 
 
-def BFS(maze, startNode, gx, gy):
+def BFSwithA(maze, startNode, gx, gy):
     fringe = []
     startNode.moves = 0
     fringe.append(startNode)
@@ -182,6 +182,33 @@ def BFS(maze, startNode, gx, gy):
     # for i in fringe:
     #    print(i.x, i.y, i.movesTaken, i.movesLeft, i.movesTaken + i.movesLeft)
     # print("--------------------")
+    return None
+
+
+def BFS(maze, startNode, gx, gy):
+    fringe = []
+    fringe.append(startNode)
+    maze[start.x][start.y].visit = "yes"
+    # while fringe isnt emty
+    while len(fringe) != 0:
+        curr = fringe.pop(0)
+
+        # if goal found return the goal, tracking trough parents will give path
+        if curr.x == gx and curr.y == gy:
+            return curr
+        # add all valid neighbors to fringe, up down left right
+        if isValid(maze, mazelength, curr.x - 1, curr.y):
+            fringe.append(Node(curr.x - 1, curr.y, curr, None))
+            maze[curr.x - 1][curr.y].visit = "yes"
+        if isValid(maze, mazelength, curr.x + 1, curr.y):
+            fringe.append(Node(curr.x + 1, curr.y, curr, None))
+            maze[curr.x + 1][curr.y].visit = "yes"
+        if isValid(maze, mazelength, curr.x, curr.y - 1):
+            fringe.append(Node(curr.x, curr.y - 1, curr, None))
+            maze[curr.x][curr.y - 1].visit = "yes"
+        if isValid(maze, mazelength, curr.x, curr.y + 1):
+            fringe.append(Node(curr.x, curr.y + 1, curr, None))
+            maze[curr.x][curr.y + 1].visit = "yes"
     return None
 
 

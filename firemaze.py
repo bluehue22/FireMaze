@@ -16,9 +16,9 @@ class Node:
 # Prints node list (path from goal to start)
 def listPrint(ptr):
     while ptr.parent != None:
-        print(ptr.data)
+        print(ptr.x,ptr.y)
         ptr = ptr.parent
-    print(ptr.data)
+    print(ptr.x,ptr.y)
         
 def makeMaze(): # might want to make it so it can return mazelength and density
     mazelength = 0
@@ -89,19 +89,21 @@ def DFS(maze,sx,sy,gx,gy):
 def BFS(maze, startNode, gx, gy):
     fringe = []
     fringe.append(startNode)
-    while len(fringe) != 0:  # while fringe isnt emty
+    # while fringe isnt emty
+    while len(fringe) != 0:
         curr = fringe.pop(0)
+        maze[curr.x][curr.y].visit = "yes"
         # if goal found return the goal, tracking trough parents will give path
         if curr.x == gx and curr.y == gy:
             return curr
-            break # wait 
-        if isValid(curr.x - 1, curr.y):  # add all valid neighbors to fringe
+        # add all valid neighbors to fringe, up down left right
+        if isValid(maze, curr.x - 1, curr.y):
             fringe.append(Node(curr.x - 1, curr.y, curr, None))
-        if isValid(curr.x + 1, curr.y):
+        if isValid(maze, curr.x + 1, curr.y):
             fringe.append(Node(curr.x + 1, curr.y, curr, None))
-        if isValid(curr.x, curr.y - 1):
+        if isValid(maze, curr.x, curr.y - 1):
             fringe.append(Node(curr.x, curr.y - 1, curr, None))
-        if isValid(curr.x, curr.y + 1):
+        if isValid(maze, curr.x, curr.y + 1):
             fringe.append(Node(curr.x, curr.y + 1, curr, None))
     return None
 

@@ -2,6 +2,7 @@ import random
 import math
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 
 
 class MazeUnit:
@@ -244,6 +245,33 @@ def BFS(maze, startNode, gx, gy):
 
 
 ###################################################################################################################
+## Problem 4: What is largest dimension you can solve DFS, BFS, and A* at p = 0.3 in under a minute?
+# Returns True if solvable using DFS (there's a successful path) in <1 min with input dim, p=0.3
+def minuteTesterDFS(dim):
+    success = False
+    while not success:
+        t0 = time.time()
+        maze = makeMaze(dim,0.3)
+        if (DFS(maze,dim,0,0,dim-1,dim-1) != None):
+            success = True
+        t1 = time.time()
+        deltaT = t1 - t0
+        if success and deltaT<60:
+            print("deltaT: {}".format(deltaT),end=" ") #!remove
+            return True
+        elif success and deltaT>60:
+            return False
+
+# Returns largest dimension solvable for DFS, #!Should run >=10 times to ensure maze isn't "free", cannot have any runtime fail
+def limitTestingDFS():
+    dim = 1000
+    while minuteTesterDFS(dim):
+        dim += 1
+        print("dim: {}".format(dim)) #! remove
+    return dim
+
+
+###################################################################################################################
 ## Beginning of main code segment
 
 ## DFS TEST CODE SAMPLE, prints path if possible
@@ -294,3 +322,8 @@ def BFS(maze, startNode, gx, gy):
 #         print("")
 #     else:
 #         print("no path")
+
+
+## PROBLEM 4 CODE SAMPLE
+# x = limitTestingDFS()
+# print("DFS Final Result: {}".format(x))

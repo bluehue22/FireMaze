@@ -1,5 +1,6 @@
 import random
 import math
+import numpy as np
 import matplotlib.pyplot as plt
 
 
@@ -40,16 +41,6 @@ def mazePrint(maze):
             else:
                 print("X", end="")
 
-
-# checks if (x,y) is a valid place to move
-def isValid(maze, mazelength, x, y):
-    if x >= mazelength or x < 0 or y >= mazelength or y < 0:  # is it out of bounds?
-        return False
-    if maze[x][y].status == "open" and maze[x][y].visit == "no":  # is it on fire?
-        return True
-    return False
-
-
 # for reverting maze back to unvisited state
 def cleanse_maze(maze):
     mazelength = len(maze)
@@ -58,6 +49,62 @@ def cleanse_maze(maze):
             maze[i][j].visit = "no"
     return maze
 
+
+###################################################################################################################
+## PROBLEM 1: Generate a maze with given dimension and obstacle density
+# Return user input values for mazelength and density
+def manual_input():
+    mazelength = 0
+    density = -1
+
+    while mazelength <= 1:
+        mazelength = int(input("Enter size length of the maze: "))  # what is size is <1
+        if mazelength <= 1:
+            print("Number invalid try again")
+
+    while density < 0 or density > 1:
+        density = float(input("Enter density: "))
+        if density < 0 or density > 1:
+            print("Number invalid try again")
+    return mazelength, density
+
+
+# Make a maze with or without user input
+def makeMaze(mazelength=None, density=None, start_pos: tuple = None, goal_pos: tuple = None):
+    # start coord and goal coord
+    if mazelength == None:
+        mazelength, density = manual_input()
+    if start_pos == None:
+        start_pos = (0, 0)
+        goal_pos = (mazelength - 1, mazelength - 1)
+
+    sx, sy = start_pos
+    gx, gy = goal_pos
+
+    maze = [
+        [MazeUnit("open", "no") for j in range(mazelength)] for i in range(mazelength)
+    ]
+
+    for i in range(mazelength):  # fill with obstacles
+        for j in range(mazelength):
+            if random.random() <= density:
+                maze[i][j] = MazeUnit("bloc", "no")
+
+    maze[sx][sy].status = "open"  # hardcode top left to be open
+    maze[gx][gy].status = "open"  # hardcode bottom right to be open
+
+    return maze
+
+
+###################################################################################################################
+## Problem 2: Write DFS algorithm, generate 'obstacle density p' vs 'probability that S can be reached from G' plot
+# Checks if (x,y) is a valid place to move
+def isValid(maze, mazelength, x, y):
+    if x >= mazelength or x < 0 or y >= mazelength or y < 0:  # is it out of bounds?
+        return False
+    if maze[x][y].status == "open" and maze[x][y].visit == "no":  # is it on fire?
+        return True
+    return False
 
 # Returns array of up/down/left/right in priority search order
 def directionPrio(sx, sy, gx, gy):
@@ -86,9 +133,7 @@ def directionPrio(sx, sy, gx, gy):
             else:
                 return ["u", "l", "r", "d"]
 
-
-## Problem 2: Write DFS algorithm, generate 'obstacle density p' vs 'probability that S can be reached from G' plot
-# DFS execution starting at (sx,sy) reaching (gx,gy)
+# DFS execution starting at (sx,sy) reaching (gx,gy), returns goal node if success, returns None if not
 def DFS(maze, mazelength, sx, sy, gx, gy):
     startNode = Node(sx, sy, None, None)
     stack = []
@@ -99,9 +144,7 @@ def DFS(maze, mazelength, sx, sy, gx, gy):
         node = stack.pop()
         maze[node.x][node.y].visit = "yes"
         if node.x == gx and node.y == gy:
-            print("\nListprint:",end=" ") #! Listprint here
-            listPrint(node) #! Listprint here
-            return True
+            return node
         for i in reversed(
             prioQ
         ):  # Append new nodes to stack in (reverse) order, lower prio appended first
@@ -117,9 +160,10 @@ def DFS(maze, mazelength, sx, sy, gx, gy):
             else:
                 if isValid(maze, mazelength, node.x, node.y + 1):
                     stack.append(Node(node.x, node.y + 1, node, None))
-    return False
+    return None
 
 
+###################################################################################################################
 ## Problem 3: Write BFS and A* algorithms, generate avg '# nodes explored by BFS - # nodes explored by A*' vs 'obstacle density p' plot
 # if path from start node to goal coord then this will send back the node of goal whose parent chain reveals path, if no path then returns None
 
@@ -129,7 +173,6 @@ def A_star_Dist(sx, sy, gx, gy):
     y = gx - sx
     c = math.sqrt(x ** 2 + y ** 2)
     return c
-
 
 # does A star mapping to get to goal coord and returns goal coord Node if path is found whose
 # chain of parents will show path and returns None if no path found
@@ -172,7 +215,6 @@ def A_star(maze, startNode, gx, gy):
     # print("--------------------")
     return None
 
-
 def BFS(maze, startNode, gx, gy):
     fringe = []
     fringe.append(startNode)
@@ -201,56 +243,42 @@ def BFS(maze, startNode, gx, gy):
     return None
 
 
+###################################################################################################################
 ## Beginning of main code segment
 
-# return user input values for mazelength and density
-def manual_input():
-    mazelength = 0
-    density = -1
-
-    while mazelength <= 1:
-        mazelength = int(input("Enter size length of the maze: "))  # what is size is <1
-        if mazelength <= 1:
-            print("Number invalid try again")
-
-    while density < 0 or density > 1:
-        density = float(input("Enter density: "))
-        if density < 0 or density > 1:
-            print("Number invalid try again")
-    return mazelength, density
+## DFS TEST CODE SAMPLE, prints path if possible
+# sx,sy,gx,gy,mazelength,p = 0,0,3,3,4,0.25
+# maze = makeMaze(mazelength,p)
+# mazePrint(maze)
+# reachable = DFS(maze,mazelength,sx,sy,gx,gy)
+# if reachable == None:
+#     print("\nNot possible to reach goal from start")
+# else:
+#     print("\nListprint:",end=" ")
+#     listPrint(reachable)
 
 
-# make a maze with or without user input
-def main(
-    mazelength=None, density=None, start_pos: tuple = None, goal_pos: tuple = None
-):
-    # start coord and goal coord
-    if mazelength == None:
-        mazelength, density = manual_input()
-    if start_pos == None:
-        start_pos = (0, 0)
-        goal_pos = (mazelength - 1, mazelength - 1)
+## DFS PROBABILITY VS OBJECT DENSITY PLOT CODE
+# probArr = []
+# sx,sy,mazelength,numTrials,plotPoints = 0,0,10,1000,101 # Set parameters here
+# gx = gy = mazelength - 1
+# for i in np.linspace(0,1,plotPoints): # Object density array 
+#     successes = 0
+#     for j in range(numTrials): # trials per object density value
+#         maze = makeMaze(mazelength,i)
+#         if DFS(maze,mazelength,sx,sy,gx,gy):
+#             successes += 1
+#     probArr.append(float(successes/numTrials)) # Add probability point to array
 
-    sx, sy = start_pos
-    gx, gy = goal_pos
-
-    maze = [
-        [MazeUnit("open", "no") for j in range(mazelength)] for i in range(mazelength)
-    ]
-
-    for i in range(mazelength):  # fill with obstacles
-        for j in range(mazelength):
-            if random.random() <= density:
-                maze[i][j] = MazeUnit("bloc", "no")
-
-    maze[sx][sy].status = "open"  # hardcode top left to be open
-    maze[gx][gy].status = "open"  # hardcode bottom right to be open
-
-    return maze
+# plt.plot(probArr,np.linspace(0,1,plotPoints))
+# plt.xlabel("Obstacle Density")
+# plt.ylabel("Probability of Success")
+# plt.show()
 
 
+## BFS CODE SAMPLE
 # for i in range(99, 100):
-#     maze = main(i, 0.3)
+#     maze = makeMaze(i, 0.3)
 #     BFS_goal_Node = BFS(maze, Node(0, 0), i - 1, i - 1)
 #     maze= cleanse_maze(maze)
 #     A_star_goal_Node = A_star(maze, Node(0, 0), i - 1, i - 1)
@@ -266,12 +294,3 @@ def main(
 #         print("")
 #     else:
 #         print("no path")
-
-
-## DFS TEST CODE BELOW
-# sx,sy,gx,gy,mazelength,p = 0,0,3,3,4,0.25
-# maze = main(mazelength,p)
-# mazePrint(maze)
-# reachable = DFS(maze,mazelength,sx,sy,gx,gy)
-# if not reachable:
-#     print("\nNot possible to reach goal from start")

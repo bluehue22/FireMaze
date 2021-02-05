@@ -19,20 +19,23 @@ class Node:
         self.movesLeft = movesLeft
 
 
-# Prints node list (path from goal to start) #! Modifiable
+# Prints node list (path from start to goal)
 def listPrint(ptr):
-    while ptr.parent != None:
-        print(ptr.x, ptr.y)
+    while ptr.parent != None: # From goal to start, adjusts all nodes in path to point to correct child
+        temp = ptr.parent
+        temp.child = ptr
         ptr = ptr.parent
-    print(ptr.x, ptr.y)
-
+    while ptr.child != None: # From start to goal, prints node path
+        print("({},{})".format(ptr.x, ptr.y),end=" ")
+        ptr = ptr.child
+    print("({},{})".format(ptr.x, ptr.y))
 
 def mazePrint(maze):
     mazelength = len(maze)
     for i in range(mazelength):
         print("")
         for j in range(mazelength):
-            if maze[i][j].status == "open":
+            if maze[j][i].status == "open": #! Representation of matrix inverted so (x,y) refers to x units across, y units down
                 print("O", end="")
             else:
                 print("X", end="")
@@ -48,7 +51,7 @@ def isValid(maze, mazelength, x, y):
 
 
 # for reverting maze back to unvisited state
-def clease_maze(maze):
+def cleanse_maze(maze):
     mazelength = len(maze)
     for i in range(mazelength):
         for j in range(mazelength):
@@ -85,9 +88,8 @@ def directionPrio(sx, sy, gx, gy):
 
 
 ## Problem 2: Write DFS algorithm, generate 'obstacle density p' vs 'probability that S can be reached from G' plot
-# DFS execution
+# DFS execution starting at (sx,sy) reaching (gx,gy)
 def DFS(maze, mazelength, sx, sy, gx, gy):
-    # Start at (sx,sy), check (x+1,y) then (y+1,x) ... want to reach (gx,gy)
     startNode = Node(sx, sy, None, None)
     stack = []
     stack.append(startNode)
@@ -97,6 +99,8 @@ def DFS(maze, mazelength, sx, sy, gx, gy):
         node = stack.pop()
         maze[node.x][node.y].visit = "yes"
         if node.x == gx and node.y == gy:
+            print("\nListprint:",end=" ") #! Listprint here
+            listPrint(node) #! Listprint here
             return True
         for i in reversed(
             prioQ
@@ -174,11 +178,11 @@ def BFS(maze, startNode, gx, gy):
     fringe.append(startNode)
     mazelength = len(maze)
     maze[startNode.x][startNode.y].visit = "yes"
-    # while fringe isnt emty
+    # while fringe isnt empty
     while len(fringe) != 0:
         curr = fringe.pop(0)
 
-        # if goal found return the goal, tracking trough parents will give path
+        # if goal found return the goal, tracking through parents will give path
         if curr.x == gx and curr.y == gy:
             return curr
         # add all valid neighbors to fringe, up down left right
@@ -199,7 +203,7 @@ def BFS(maze, startNode, gx, gy):
 
 ## Beginning of main code segment
 
-# return user imput values for mazelength and density
+# return user input values for mazelength and density
 def manual_input():
     mazelength = 0
     density = -1
@@ -216,7 +220,7 @@ def manual_input():
     return mazelength, density
 
 
-# make a maze with or without user imput
+# make a maze with or without user input
 def main(
     mazelength=None, density=None, start_pos: tuple = None, goal_pos: tuple = None
 ):
@@ -241,13 +245,14 @@ def main(
 
     maze[sx][sy].status = "open"  # hardcode top left to be open
     maze[gx][gy].status = "open"  # hardcode bottom right to be open
+
     return maze
 
 
 # for i in range(99, 100):
 #     maze = main(i, 0.3)
 #     BFS_goal_Node = BFS(maze, Node(0, 0), i - 1, i - 1)
-#     maze= clease_maze(maze)
+#     maze= cleanse_maze(maze)
 #     A_star_goal_Node = A_star(maze, Node(0, 0), i - 1, i - 1)
 #     mazePrint(maze)
 
@@ -264,9 +269,9 @@ def main(
 
 
 ## DFS TEST CODE BELOW
-# mazePrint(maze,mazelength)
+# sx,sy,gx,gy,mazelength,p = 0,0,3,3,4,0.25
+# maze = main(mazelength,p)
+# mazePrint(maze)
 # reachable = DFS(maze,mazelength,sx,sy,gx,gy)
-# print("\n")
-# print(reachable)
-# benton is a lil hoe
-# benton is a big hoe
+# if not reachable:
+#     print("\nNot possible to reach goal from start")

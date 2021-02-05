@@ -270,7 +270,7 @@ def BFS(maze, startNode, gx, gy):
 #             successes += 1
 #     probArr.append(float(successes/numTrials)) # Add probability point to array
 
-# plt.plot(probArr,np.linspace(0,1,plotPoints))
+# plt.plot(np.linspace(0,1,plotPoints),probArr)
 # plt.xlabel("Obstacle Density")
 # plt.ylabel("Probability of Success")
 # plt.show()

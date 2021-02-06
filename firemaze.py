@@ -6,10 +6,10 @@ import time
 
 
 class MazeUnit:
-    def __init__(self, status, visit):
+    def __init__(self, status, visit, q=False):
         self.status = status  # open, bloc, fire
         self.visit = visit  # yes, no, on
-
+        self.q = q
 
 class Node:
     def __init__(self, x, y, parent=None, child=None, movesTaken=0, movesLeft=0):
@@ -41,6 +41,11 @@ def mazePrint(maze):
                 print("O", end="")
             else:
                 print("X", end="")
+
+def fringePrint(fringe):
+    print("\nFringe: ",end=" ")
+    for node in fringe:
+        print("({},{})".format(node.x,node.y),end=" ")
 
 # for reverting maze back to unvisited state
 def cleanse_maze(maze):
@@ -82,9 +87,7 @@ def makeMaze(mazelength=None, density=None, start_pos: tuple = None, goal_pos: t
     sx, sy = start_pos
     gx, gy = goal_pos
 
-    maze = [
-        [MazeUnit("open", "no") for j in range(mazelength)] for i in range(mazelength)
-    ]
+    maze = [[MazeUnit("open", "no") for j in range(mazelength)] for i in range(mazelength)]
 
     for i in range(mazelength):  # fill with obstacles
         for j in range(mazelength):
@@ -103,7 +106,7 @@ def makeMaze(mazelength=None, density=None, start_pos: tuple = None, goal_pos: t
 def isValid(maze, mazelength, x, y):
     if x >= mazelength or x < 0 or y >= mazelength or y < 0:  # is it out of bounds?
         return False
-    if maze[x][y].status == "open" and maze[x][y].visit == "no":  # is it on fire?
+    if maze[x][y].status == "open" and maze[x][y].visit == "no" and not maze[x][y].q:  # is it on fire and NOT in fringe?
         return True
     return False
 
@@ -139,6 +142,7 @@ def DFS(maze, mazelength, sx, sy, gx, gy):
     startNode = Node(sx, sy, None, None)
     stack = []
     stack.append(startNode)
+    maze[sx][sy].q = True
     prioQ = directionPrio(sx, sy, gx, gy)
 
     while len(stack) != 0:  # While stack isn't empty
@@ -146,21 +150,23 @@ def DFS(maze, mazelength, sx, sy, gx, gy):
         maze[node.x][node.y].visit = "yes"
         if node.x == gx and node.y == gy:
             return node
-        for i in reversed(
-            prioQ
-        ):  # Append new nodes to stack in (reverse) order, lower prio appended first
+        for i in reversed(prioQ):  # Append new nodes to stack in (reverse) order, lower prio appended first
             if i == "r":
                 if isValid(maze, mazelength, node.x + 1, node.y):
                     stack.append(Node(node.x + 1, node.y, node, None))
+                    maze[node.x+1][node.y].q = True
             elif i == "l":
                 if isValid(maze, mazelength, node.x - 1, node.y):
                     stack.append(Node(node.x - 1, node.y, node, None))
+                    maze[node.x-1][node.y].q = True
             elif i == "u":
                 if isValid(maze, mazelength, node.x, node.y - 1):
                     stack.append(Node(node.x, node.y - 1, node, None))
+                    maze[node.x][node.y-1].q = True
             else:
                 if isValid(maze, mazelength, node.x, node.y + 1):
                     stack.append(Node(node.x, node.y + 1, node, None))
+                    maze[node.x][node.y+1].q = True
     return None
 
 

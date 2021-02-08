@@ -11,6 +11,7 @@ class MazeUnit:
         self.visit = visit  # yes, no, on
         self.q = q
 
+
 class Node:
     def __init__(self, x, y, parent=None, child=None, movesTaken=0, movesLeft=0):
         self.x = x
@@ -23,29 +24,36 @@ class Node:
 
 # Prints node list (path from start to goal)
 def listPrint(ptr):
-    while ptr.parent != None: # From goal to start, adjusts all nodes in path to point to correct child
+    while (
+        ptr.parent != None
+    ):  # From goal to start, adjusts all nodes in path to point to correct child
         temp = ptr.parent
         temp.child = ptr
         ptr = ptr.parent
-    while ptr.child != None: # From start to goal, prints node path
-        print("({},{})".format(ptr.x, ptr.y),end=" ")
+    while ptr.child != None:  # From start to goal, prints node path
+        print("({},{})".format(ptr.x, ptr.y), end=" ")
         ptr = ptr.child
     print("({},{})".format(ptr.x, ptr.y))
+
 
 def mazePrint(maze):
     mazelength = len(maze)
     for i in range(mazelength):
         print("")
         for j in range(mazelength):
-            if maze[j][i].status == "open": #! Representation of matrix inverted so (x,y) refers to x units across, y units down
+            if (
+                maze[j][i].status == "open"
+            ):  #! Representation of matrix inverted so (x,y) refers to x units across, y units down
                 print("O", end="")
             else:
                 print("X", end="")
 
+
 def fringePrint(fringe):
-    print("\nFringe: ",end=" ")
+    print("\nFringe: ", end=" ")
     for node in fringe:
-        print("({},{})".format(node.x,node.y),end=" ")
+        print("({},{})".format(node.x, node.y), end=" ")
+
 
 # for reverting maze back to unvisited state
 def cleanse_maze(maze):
@@ -76,7 +84,9 @@ def manual_input():
 
 
 # Make a maze with or without user input
-def makeMaze(mazelength=None, density=None, start_pos: tuple = None, goal_pos: tuple = None):
+def makeMaze(
+    mazelength=None, density=None, start_pos: tuple = None, goal_pos: tuple = None
+):
     # start coord and goal coord
     if mazelength == None:
         mazelength, density = manual_input()
@@ -87,7 +97,9 @@ def makeMaze(mazelength=None, density=None, start_pos: tuple = None, goal_pos: t
     sx, sy = start_pos
     gx, gy = goal_pos
 
-    maze = [[MazeUnit("open", "no") for j in range(mazelength)] for i in range(mazelength)]
+    maze = [
+        [MazeUnit("open", "no") for j in range(mazelength)] for i in range(mazelength)
+    ]
 
     for i in range(mazelength):  # fill with obstacles
         for j in range(mazelength):
@@ -106,9 +118,12 @@ def makeMaze(mazelength=None, density=None, start_pos: tuple = None, goal_pos: t
 def isValid(maze, mazelength, x, y):
     if x >= mazelength or x < 0 or y >= mazelength or y < 0:  # is it out of bounds?
         return False
-    if maze[x][y].status == "open" and maze[x][y].visit == "no" and not maze[x][y].q:  # is it on fire and NOT in fringe?
+    if (
+        maze[x][y].status == "open" and maze[x][y].visit == "no" and not maze[x][y].q
+    ):  # is it on fire and NOT in fringe?
         return True
     return False
+
 
 # Returns array of up/down/left/right in priority search order
 def directionPrio(sx, sy, gx, gy):
@@ -137,6 +152,7 @@ def directionPrio(sx, sy, gx, gy):
             else:
                 return ["u", "l", "r", "d"]
 
+
 # DFS execution starting at (sx,sy) reaching (gx,gy), returns goal node if success, returns None if not
 def DFS(maze, mazelength, sx, sy, gx, gy):
     startNode = Node(sx, sy, None, None)
@@ -150,23 +166,25 @@ def DFS(maze, mazelength, sx, sy, gx, gy):
         maze[node.x][node.y].visit = "yes"
         if node.x == gx and node.y == gy:
             return node
-        for i in reversed(prioQ):  # Append new nodes to stack in (reverse) order, lower prio appended first
+        for i in reversed(
+            prioQ
+        ):  # Append new nodes to stack in (reverse) order, lower prio appended first
             if i == "r":
                 if isValid(maze, mazelength, node.x + 1, node.y):
                     stack.append(Node(node.x + 1, node.y, node, None))
-                    maze[node.x+1][node.y].q = True
+                    maze[node.x + 1][node.y].q = True
             elif i == "l":
                 if isValid(maze, mazelength, node.x - 1, node.y):
                     stack.append(Node(node.x - 1, node.y, node, None))
-                    maze[node.x-1][node.y].q = True
+                    maze[node.x - 1][node.y].q = True
             elif i == "u":
                 if isValid(maze, mazelength, node.x, node.y - 1):
                     stack.append(Node(node.x, node.y - 1, node, None))
-                    maze[node.x][node.y-1].q = True
+                    maze[node.x][node.y - 1].q = True
             else:
                 if isValid(maze, mazelength, node.x, node.y + 1):
                     stack.append(Node(node.x, node.y + 1, node, None))
-                    maze[node.x][node.y+1].q = True
+                    maze[node.x][node.y + 1].q = True
     return None
 
 
@@ -181,6 +199,7 @@ def A_star_Dist(sx, sy, gx, gy):
     c = math.sqrt(x ** 2 + y ** 2)
     return c
 
+
 # does A star mapping to get to goal coord and returns goal coord Node if path is found whose
 # chain of parents will show path and returns None if no path found
 def A_star(maze, startNode, gx, gy):
@@ -189,51 +208,62 @@ def A_star(maze, startNode, gx, gy):
     fringe.append(startNode)
     maze[startNode.x][startNode.y].visit = "yes"
     mazelength = len(maze)
+    nodes_searched = 0
     # while fringe isnt emty
     while len(fringe) != 0:
         curr = fringe.pop(0)
-
+        nodes_searched += 1
         # if goal found return the goal, tracking trough parents will give path
         if curr.x == gx and curr.y == gy:
-            return curr
+            return curr, nodes_searched
         # add all valid neighbors to fringe, up down left right
         up = curr.x - 1
         down = curr.x + 1
         left = curr.y - 1
         right = curr.y + 1
         # fmt: off
+        #time_to_sort = 0
         if isValid(maze, mazelength, up, curr.y):
             fringe.append(Node(up, curr.y, curr, None, curr.movesTaken + 1, A_star_Dist(up, curr.y, gx, gy)))
             maze[up][curr.y].visit = "yes"
+            #time_to_sort = 1
         if isValid(maze, mazelength, down, curr.y):
             fringe.append(Node(down, curr.y, curr, None, curr.movesTaken + 1,A_star_Dist(down, curr.y, gx, gy)))
             maze[down][curr.y].visit = "yes"
+            #time_to_sort = 1
         if isValid(maze, mazelength, curr.x, left):
             fringe.append(Node(curr.x, left, curr, None, curr.movesTaken + 1,A_star_Dist(curr.x, left, gx, gy)))
             maze[curr.x][left].visit = "yes"
+            #time_to_sort = 1
         if isValid(maze, mazelength, curr.x, right):
             fringe.append(Node(curr.x, right, curr, None, curr.movesTaken + 1,A_star_Dist(curr.x, right, gx, gy)))
             maze[curr.x][right].visit = "yes"
+            #time_to_sort = 1
         # fmt: on
+        # if time_to_sort == 1:
         fringe.sort(key=lambda Node: (Node.movesTaken + Node.movesLeft))
-    # for testing purposes
-    # for i in fringe:
-    #     print(i.x, i.y, i.movesTaken, i.movesLeft, i.movesTaken + i.movesLeft)
-    # print("--------------------")
-    return None
+        # #  for testing purposes
+        # print("x y M L   T")
+        # for i in fringe:
+        #     print(i.x, i.y, i.movesTaken, i.movesLeft, i.movesTaken + i.movesLeft)
+        # print("--------------------")
+
+    return None, nodes_searched
+
 
 def BFS(maze, startNode, gx, gy):
     fringe = []
     fringe.append(startNode)
     mazelength = len(maze)
     maze[startNode.x][startNode.y].visit = "yes"
+    nodes_searched = 0
     # while fringe isnt empty
     while len(fringe) != 0:
         curr = fringe.pop(0)
-
+        nodes_searched += 1
         # if goal found return the goal, tracking through parents will give path
         if curr.x == gx and curr.y == gy:
-            return curr
+            return curr, nodes_searched
         # add all valid neighbors to fringe, up down left right
         if isValid(maze, mazelength, curr.x - 1, curr.y):
             fringe.append(Node(curr.x - 1, curr.y, curr, None))
@@ -247,7 +277,7 @@ def BFS(maze, startNode, gx, gy):
         if isValid(maze, mazelength, curr.x, curr.y + 1):
             fringe.append(Node(curr.x, curr.y + 1, curr, None))
             maze[curr.x][curr.y + 1].visit = "yes"
-    return None
+    return None, nodes_searched
 
 
 ###################################################################################################################
@@ -257,23 +287,24 @@ def minuteTesterDFS(dim):
     success = False
     while not success:
         t0 = time.time()
-        maze = makeMaze(dim,0.3)
-        if (DFS(maze,dim,0,0,dim-1,dim-1) != None):
+        maze = makeMaze(dim, 0.3)
+        if DFS(maze, dim, 0, 0, dim - 1, dim - 1) != None:
             success = True
         t1 = time.time()
         deltaT = t1 - t0
-        if success and deltaT<60:
-            print("deltaT: {}".format(deltaT),end=" ") #!remove
+        if success and deltaT < 60:
+            print("deltaT: {}".format(deltaT), end=" ")  #!remove
             return True
-        elif success and deltaT>60:
+        elif success and deltaT > 60:
             return False
+
 
 # Returns largest dimension solvable for DFS, #!Should run >=10 times to ensure maze isn't "free", cannot have any runtime fail
 def limitTestingDFS():
     dim = 1000
     while minuteTesterDFS(dim):
         dim += 1
-        print("dim: {}".format(dim)) #! remove
+        print("dim: {}".format(dim))  #! remove
     return dim
 
 
@@ -296,7 +327,7 @@ def limitTestingDFS():
 # probArr = []
 # sx,sy,mazelength,numTrials,plotPoints = 0,0,10,1000,101 # Set parameters here
 # gx = gy = mazelength - 1
-# for i in np.linspace(0,1,plotPoints): # Object density array 
+# for i in np.linspace(0,1,plotPoints): # Object density array
 #     successes = 0
 #     for j in range(numTrials): # trials per object density value
 #         maze = makeMaze(mazelength,i)
@@ -310,24 +341,49 @@ def limitTestingDFS():
 # plt.show()
 
 
-## BFS CODE SAMPLE
-# for i in range(99, 100):
-#     maze = makeMaze(i, 0.3)
-#     BFS_goal_Node = BFS(maze, Node(0, 0), i - 1, i - 1)
-#     maze= cleanse_maze(maze)
-#     A_star_goal_Node = A_star(maze, Node(0, 0), i - 1, i - 1)
-#     mazePrint(maze)
-
+# ## BFS / A* problem 3 CODE SAMPLE
+# i = 750
+# density = 0
+# attempts_to_solve = 0
+# density_list = []
+# A_star_num_node_list = []
+# BFS_num_node_list = []
+# while density <= 1:
+#     maze = makeMaze(i, density)
+#     BFS_goal_Node, BFS_nodes_searched = BFS(maze, Node(0, 0), i - 1, i - 1)
+#     maze = cleanse_maze(maze)
+#     A_star_goal_Node, A_star_nodes_searched = A_star(maze, Node(0, 0), i - 1, i - 1)
+#     # mazePrint(maze)
 #     if A_star_goal_Node != None:
-#         listPrint(A_star_goal_Node)
-#         print("")
+#         # listPrint(A_star_goal_Node)
+#         # print("A-yes", A_star_nodes_searched, BFS_num_node_list)
+#         A_star_num_node_list.append(A_star_nodes_searched)
+#         BFS_num_node_list.append(BFS_nodes_searched)
+#         density_list.append(density)
+#         density = density + 0.01
+#         print(density)
+#         attempts_to_solve = 0
 #     else:
-#         print("no path")
-#     if BFS_goal_Node != None:
-#         listPrint(BFS_goal_Node)
-#         print("")
-#     else:
-#         print("no path")
+#         attempts_to_solve += 1
+#     if attempts_to_solve == 25:
+#         A_star_num_node_list.append(A_star_nodes_searched)
+#         BFS_num_node_list.append(BFS_nodes_searched)
+#         density_list.append(density)
+#         density = density + 0.01
+#         print(density)
+#         attempts_to_solve = 0
+# plt.xlabel("Obstacle Density")
+# plt.ylabel("Nodes Checked")
+# plt.plot(density_list, BFS_num_node_list, color="red", label="BFS")
+# plt.plot(density_list, A_star_num_node_list, color="blue", label="A*")
+# plt.legend(loc="best")
+# plt.show()
+
+# ##ANDREWS A STAR RECHECK
+# maze = makeMaze(5, 0)
+# A_star_goal_Node, A_star_nodes_searched = A_star(maze, Node(0, 0), 5 - 1, 5 - 1)
+# mazePrint(maze)
+# print(A_star_nodes_searched)
 
 
 ## PROBLEM 4 CODE SAMPLE

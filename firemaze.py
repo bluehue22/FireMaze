@@ -222,27 +222,27 @@ def A_star(maze, startNode, gx, gy):
         left = curr.y - 1
         right = curr.y + 1
         # fmt: off
-        #time_to_sort = 0
+        time_to_sort = 0
         if isValid(maze, mazelength, up, curr.y):
             fringe.append(Node(up, curr.y, curr, None, curr.movesTaken + 1, A_star_Dist(up, curr.y, gx, gy)))
             maze[up][curr.y].visit = "yes"
-            #time_to_sort = 1
+            time_to_sort = 1
         if isValid(maze, mazelength, down, curr.y):
             fringe.append(Node(down, curr.y, curr, None, curr.movesTaken + 1,A_star_Dist(down, curr.y, gx, gy)))
             maze[down][curr.y].visit = "yes"
-            #time_to_sort = 1
+            time_to_sort = 1
         if isValid(maze, mazelength, curr.x, left):
             fringe.append(Node(curr.x, left, curr, None, curr.movesTaken + 1,A_star_Dist(curr.x, left, gx, gy)))
             maze[curr.x][left].visit = "yes"
-            #time_to_sort = 1
+            time_to_sort = 1
         if isValid(maze, mazelength, curr.x, right):
             fringe.append(Node(curr.x, right, curr, None, curr.movesTaken + 1,A_star_Dist(curr.x, right, gx, gy)))
             maze[curr.x][right].visit = "yes"
-            #time_to_sort = 1
+            time_to_sort = 1
         # fmt: on
-        # if time_to_sort == 1:
-        fringe.sort(key=lambda Node: (Node.movesTaken + Node.movesLeft))
-        # #  for testing purposes
+        if time_to_sort == 1:
+            fringe.sort(key=lambda Node: (Node.movesTaken + Node.movesLeft))
+        #  for testing purposes
         # print("x y M L   T")
         # for i in fringe:
         #     print(i.x, i.y, i.movesTaken, i.movesLeft, i.movesTaken + i.movesLeft)
@@ -263,6 +263,7 @@ def BFS(maze, startNode, gx, gy):
         nodes_searched += 1
         # if goal found return the goal, tracking through parents will give path
         if curr.x == gx and curr.y == gy:
+            print(nodes_searched)
             return curr, nodes_searched
         # add all valid neighbors to fringe, up down left right
         if isValid(maze, mazelength, curr.x - 1, curr.y):
@@ -283,13 +284,20 @@ def BFS(maze, startNode, gx, gy):
 ###################################################################################################################
 ## Problem 4: What is largest dimension you can solve DFS, BFS, and A* at p = 0.3 in under a minute?
 # Returns True if solvable using DFS (there's a successful path) in <1 min with input dim, p=0.3
-def minuteTesterDFS(dim):
+def minuteTester(dim, method):
     success = False
     while not success:
         t0 = time.time()
         maze = makeMaze(dim, 0.3)
-        if DFS(maze, dim, 0, 0, dim - 1, dim - 1) != None:
-            success = True
+        if method == "DFS":
+            if DFS(maze, dim, 0, 0, dim - 1, dim - 1) != None:
+                success = True
+        if method == "BFS":
+            if BFS(maze, Node(0, 0), dim - 1, dim - 1)[0] != None:
+                success = True
+        if method == "A*":
+            if A_star(maze, Node(0, 0), dim - 1, dim - 1)[0] != None:
+                success = True
         t1 = time.time()
         deltaT = t1 - t0
         if success and deltaT < 60:
@@ -299,13 +307,12 @@ def minuteTesterDFS(dim):
             return False
 
 
-# Returns largest dimension solvable for DFS, #!Should run >=10 times to ensure maze isn't "free", cannot have any runtime fail
-def limitTestingDFS():
-    dim = 1000
-    while minuteTesterDFS(dim):
-        dim += 1
-        print("dim: {}".format(dim))  #! remove
-    return dim
+# Returns largest dimension solvable for search methods, #!Should run >=10 times to ensure maze isn't "free", cannot have any runtime fail
+def limitTesting(dim, increment, method):
+    while minuteTester(dim, method):
+        print("dim: {}".format(dim))  #! removed
+        dim += increment
+    return dim - increment
 
 
 ###################################################################################################################
@@ -379,13 +386,13 @@ def limitTestingDFS():
 # plt.legend(loc="best")
 # plt.show()
 
-# ##ANDREWS A STAR RECHECK
-# maze = makeMaze(5, 0)
+##ANDREWS A STAR RECHECK
+# maze = makeMaze(5, 1)
 # A_star_goal_Node, A_star_nodes_searched = A_star(maze, Node(0, 0), 5 - 1, 5 - 1)
 # mazePrint(maze)
 # print(A_star_nodes_searched)
 
 
-## PROBLEM 4 CODE SAMPLE
-# x = limitTestingDFS()
-# print("DFS Final Result: {}".format(x))
+# PROBLEM 4 CODE SAMPLE
+# x = limitTesting(865, 5, "A*") #A*,BSF,DFS
+# print("BFS Final Result: {}".format(x))

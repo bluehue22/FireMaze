@@ -327,13 +327,13 @@ def advFire(maze,q):
             if maze[i][j].status == "open": # MazeUnit isn't on fire or blocked
                 count = 0 # Check all cells around [i][j] for fire, checking validity of cell location first
                 if (i+1)<mazelength and maze[i+1][j].status == "fire":
-                    count+=
+                    count+=1
                 if (i-1)>-1 and maze[i-1][j].status == "fire":
-                    count+=
+                    count+=1
                 if (j+1)<mazelength and maze[i][j+1].status == "fire":
-                    count+=
+                    count+=1
                 if (j-1)>-1 and maze[i][j-1].status =="fire":
-                    count+=
+                    count+=1
                 prob = 1-((1-q)**count)
                 if random.random() <= prob:
                     mazeCopy[i][j].status = "fire"

@@ -352,6 +352,20 @@ def validFireMaze(maze, fireLocationx, firelocationy):
     return True
 
 
+def strat1():
+    # THIS IS BFS
+    return
+
+
+def strat2():
+    #THIS IS BFS BUT UPDATED EVERY TURN
+    return
+
+
+def strat3():
+    return
+
+
 ###################################################################################################################
 ## Beginning of main code segment
 

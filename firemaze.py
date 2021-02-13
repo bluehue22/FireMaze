@@ -394,5 +394,5 @@ def limitTesting(dim, increment, method):
 
 
 # PROBLEM 4 CODE SAMPLE
-# x = limitTesting(865, 5, "A*") #A*,BSF,DFS
+# x = limitTesting(6000, 100, "DFS")  # A*,BSF,DFS
 # print("BFS Final Result: {}".format(x))

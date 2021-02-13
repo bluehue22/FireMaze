@@ -318,26 +318,38 @@ def limitTesting(dim, increment, method):
 
 ###################################################################################################################
 ## Fire maze functions and strategies
-# Fire spreading function, q is flammability rate
-def advFire(maze,q):
+# Fire spreading function, q is flammability rate,
+def advFire(maze, q):
     mazelength = len(maze)
     mazeCopy = copy.deepcopy(maze)
     for i in range(mazelength):
         for j in range(mazelength):
-            if maze[i][j].status == "open": # MazeUnit isn't on fire or blocked
-                count = 0 # Check all cells around [i][j] for fire, checking validity of cell location first
-                if (i+1)<mazelength and maze[i+1][j].status == "fire":
-                    count+=1
-                if (i-1)>-1 and maze[i-1][j].status == "fire":
-                    count+=1
-                if (j+1)<mazelength and maze[i][j+1].status == "fire":
-                    count+=1
-                if (j-1)>-1 and maze[i][j-1].status =="fire":
-                    count+=1
-                prob = 1-((1-q)**count)
+            if maze[i][j].status == "open":  # MazeUnit isn't on fire or blocked
+                count = 0  # Check all cells around [i][j] for fire, checking validity of cell location first
+                if (i + 1) < mazelength and maze[i + 1][j].status == "fire":
+                    count += 1
+                if (i - 1) > -1 and maze[i - 1][j].status == "fire":
+                    count += 1
+                if (j + 1) < mazelength and maze[i][j + 1].status == "fire":
+                    count += 1
+                if (j - 1) > -1 and maze[i][j - 1].status == "fire":
+                    count += 1
+                prob = 1 - ((1 - q) ** count)
                 if random.random() <= prob:
                     mazeCopy[i][j].status = "fire"
     return mazeCopy
+
+
+# checks if there is path from man to goal and man to fire
+def validFireMaze(maze, fireLocationx, firelocationy):
+    mazelength = len(maze)
+    # path from start to fire
+    if DFS(maze, mazelength, 0, 0, fireLocationx, firelocationy) == None:
+        return False
+    # path from start to finish
+    if DFS(maze, mazelength, 0, 0, mazelength - 1, mazelength - 1) == None:
+        return False
+    return True
 
 
 ###################################################################################################################

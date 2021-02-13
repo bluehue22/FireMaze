@@ -3,6 +3,7 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import copy
 
 
 class MazeUnit:
@@ -316,6 +317,30 @@ def limitTesting(dim, increment, method):
 
 
 ###################################################################################################################
+## Fire maze functions and strategies
+# Fire spreading function, q is flammability rate
+def advFire(maze,q):
+    mazelength = len(maze)
+    mazeCopy = copy.deepcopy(maze)
+    for i in range(mazelength):
+        for j in range(mazelength):
+            if maze[i][j].status == "open": # MazeUnit isn't on fire or blocked
+                count = 0 # Check all cells around [i][j] for fire, checking validity of cell location first
+                if (i+1)<mazelength and maze[i+1][j].status == "fire":
+                    count+=1
+                if (i-1)>-1 and maze[i-1][j].status == "fire":
+                    count+=1
+                if (j+1)<mazelength and maze[i][j+1].status == "fire":
+                    count+=1
+                if (j-1)>-1 and maze[i][j-1].status =="fire":
+                    count+=1
+                prob = 1-((1-q)**count)
+                if random.random() <= prob:
+                    mazeCopy[i][j].status = "fire"
+    return mazeCopy
+
+
+###################################################################################################################
 ## Beginning of main code segment
 
 ## DFS TEST CODE SAMPLE, prints path if possible
@@ -332,7 +357,7 @@ def limitTesting(dim, increment, method):
 
 ## DFS PROBABILITY VS OBJECT DENSITY PLOT CODE
 # probArr = []
-# sx,sy,mazelength,numTrials,plotPoints = 0,0,10,1000,101 # Set parameters here
+# sx,sy,mazelength,numTrials,plotPoints = 0,0,100,1000,101 # Set parameters here
 # gx = gy = mazelength - 1
 # for i in np.linspace(0,1,plotPoints): # Object density array
 #     successes = 0

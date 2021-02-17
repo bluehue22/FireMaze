@@ -37,17 +37,27 @@ def listPrint(ptr):
     print("({},{})".format(ptr.x, ptr.y))
 
 
+# returns parent node list (path from start to goal)
+def listReverse(ptr):
+    while ptr.parent != None:
+        temp = ptr.parent
+        temp.child = ptr
+        ptr = ptr.parent
+    return ptr
+
+
+# prints maze out of easy to read O (open) and X (closed) characters
 def mazePrint(maze):
     mazelength = len(maze)
     for i in range(mazelength):
         print("")
         for j in range(mazelength):
-            if (
-                maze[j][i].status == "open"
-            ):  #! Representation of matrix inverted so (x,y) refers to x units across, y units down
-                print("O", end="")
+            if maze[i][j].status == "open":
+                print("O", end=" ")
+            elif maze[i][j].status == "fire":
+                print("F", end=" ")
             else:
-                print("X", end="")
+                print("X", end=" ")
 
 
 def fringePrint(fringe):
@@ -119,10 +129,10 @@ def makeMaze(
 def isValid(maze, mazelength, x, y):
     if x >= mazelength or x < 0 or y >= mazelength or y < 0:  # is it out of bounds?
         return False
-    if (
-        maze[x][y].status == "open" and maze[x][y].visit == "no" and not maze[x][y].q
-    ):  # is it on fire and NOT in fringe?
+    # is it on fire and NOT in fringe?
+    if maze[x][y].status == "open" and maze[x][y].visit == "no" and not maze[x][y].q:
         return True
+    print(maze[x][y].status, maze[x][y].visit, x, y)
     return False
 
 
@@ -224,18 +234,22 @@ def A_star(maze, startNode, gx, gy):
         right = curr.y + 1
         # fmt: off
         time_to_sort = 0
+    
         if isValid(maze, mazelength, up, curr.y):
             fringe.append(Node(up, curr.y, curr, None, curr.movesTaken + 1, A_star_Dist(up, curr.y, gx, gy)))
             maze[up][curr.y].visit = "yes"
             time_to_sort = 1
+
         if isValid(maze, mazelength, down, curr.y):
             fringe.append(Node(down, curr.y, curr, None, curr.movesTaken + 1,A_star_Dist(down, curr.y, gx, gy)))
             maze[down][curr.y].visit = "yes"
             time_to_sort = 1
+
         if isValid(maze, mazelength, curr.x, left):
             fringe.append(Node(curr.x, left, curr, None, curr.movesTaken + 1,A_star_Dist(curr.x, left, gx, gy)))
             maze[curr.x][left].visit = "yes"
             time_to_sort = 1
+
         if isValid(maze, mazelength, curr.x, right):
             fringe.append(Node(curr.x, right, curr, None, curr.movesTaken + 1,A_star_Dist(curr.x, right, gx, gy)))
             maze[curr.x][right].visit = "yes"
@@ -261,24 +275,29 @@ def BFS(maze, startNode, gx, gy):
     # while fringe isnt empty
     while len(fringe) != 0:
         curr = fringe.pop(0)
+
         nodes_searched += 1
         # if goal found return the goal, tracking through parents will give path
         if curr.x == gx and curr.y == gy:
-            print(nodes_searched)
+            # print(nodes_searched)
             return curr, nodes_searched
-        # add all valid neighbors to fringe, up down left right
+        # add all valid neighbors to fringe, up, down, left, right
         if isValid(maze, mazelength, curr.x - 1, curr.y):
             fringe.append(Node(curr.x - 1, curr.y, curr, None))
             maze[curr.x - 1][curr.y].visit = "yes"
+
         if isValid(maze, mazelength, curr.x + 1, curr.y):
             fringe.append(Node(curr.x + 1, curr.y, curr, None))
             maze[curr.x + 1][curr.y].visit = "yes"
+
         if isValid(maze, mazelength, curr.x, curr.y - 1):
             fringe.append(Node(curr.x, curr.y - 1, curr, None))
             maze[curr.x][curr.y - 1].visit = "yes"
+
         if isValid(maze, mazelength, curr.x, curr.y + 1):
             fringe.append(Node(curr.x, curr.y + 1, curr, None))
             maze[curr.x][curr.y + 1].visit = "yes"
+
     return None, nodes_searched
 
 
@@ -340,29 +359,58 @@ def advFire(maze, q):
     return mazeCopy
 
 
-# checks if there is path from man to goal and man to fire
-def validFireMaze(maze, fireLocationx, firelocationy):
-    mazelength = len(maze)
-    # path from start to fire
-    if DFS(maze, mazelength, 0, 0, fireLocationx, firelocationy) == None:
-        return False
-    # path from start to finish
-    if DFS(maze, mazelength, 0, 0, mazelength - 1, mazelength - 1) == None:
-        return False
-    return True
+# returns a valid fire maze, will not work if density too high for path to exist
+def makeFireMaze(mazelength, density):
+    while True:
+        maze = makeMaze(mazelength, density)
+        if DFS(maze, len(maze), 0, 0, len(maze) - 1, len(maze) - 1) != None:
+            break
+    maze = cleanse_maze(maze)
+    while True:
+        x = random.randint(0, len(maze) - 1)
+        y = random.randint(0, len(maze) - 1)
+        if maze[x][y].status == "open":
+            if not (x == y and x == 0) and not (x == y and x == len(maze) - 1):
+                maze[x][y].status = "fire"
+                return maze
 
 
-def strat1():
-    # THIS IS BFS
-    return
+# send me valid fire maze will return (true and goal node) or (False and last node of fail)
+def strat1(maze, q):
+    ptr, _ = BFS(maze, Node(0, 0), len(maze) - 1, len(maze) - 1)
+    ptr = listReverse(ptr)
+
+    while ptr.child != None:
+        ptr = ptr.child
+        maze = advFire(maze, q)
+        mazePrint(maze)
+        if isValid(maze, len(maze), ptr.x, ptr.y) == False:
+            return False, ptr
+    if ptr.x == len(maze) - 1 and ptr.y == len(maze) - 1:
+        return True, ptr
+    return False, ptr
 
 
-def strat2():
-    # THIS IS BFS BUT UPDATED EVERY TURN
-    return
+def strat2(maze, q):
+    ptr = BFS(maze, Node(0, 0), len(maze) - 1, len(maze) - 1)[0]
+    ptr = listReverse(ptr)
+    answer = Node(ptr.x, ptr.y)  # returns path taken
+
+    while ptr.child != None:
+        ptr = ptr.child
+        maze = advFire(maze, q)
+        answer.child = Node(ptr.x, ptr.y, answer)
+        answer = answer.child
+        if isValid(maze, len(maze), ptr.x, ptr.y) == False:
+            return False, answer
+        ptr = BFS(maze, Node(ptr.x, ptr.y), len(maze) - 1, len(maze) - 1)[0]
+        if ptr == None:
+            return False, answer
+        ptr = listReverse(ptr)
+    return True, answer
 
 
-def strat3():
+def strat3(maze):
 
     return
 
@@ -439,12 +487,27 @@ def strat3():
 # plt.show()
 
 ##ANDREWS A STAR RECHECK
-maze = makeMaze(10, 0.3)
+# maze = makeMaze(5, 1)
 # A_star_goal_Node, A_star_nodes_searched = A_star(maze, Node(0, 0), 5 - 1, 5 - 1)
-mazePrint(maze)
+# mazePrint(maze)
 # print(A_star_nodes_searched)
 
 
 # PROBLEM 4 CODE SAMPLE
 # x = limitTesting(6000, 100, "DFS")  # A*,BSF,DFS
 # print("BFS Final Result: {}".format(x))
+
+
+# mazelength = 10
+# density = 0.3
+# w = 0.1
+# maze = makeFireMaze(mazelength, density)
+# # maze = makeMaze(mazelength, density)
+# mazePrint(maze)
+# maze = cleanse_maze(maze)
+# end, _ = BFS(maze, Node(0, 0), mazelength - 1, mazelength - 1)
+# # end, _ = BFS(maze, Node(0, 0), mazelength - 1, mazelength - 1)
+# print(end.x, end.y)
+# # path, end = strat1(maze, q)
+# # if path:
+# #     listPrint(end)

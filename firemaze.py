@@ -7,10 +7,9 @@ import copy
 
 
 class MazeUnit:
-    def __init__(self, status, visit, q=False):
+    def __init__(self, status, visit):
         self.status = status  # open, bloc, fire
         self.visit = visit  # yes, no, on
-        self.q = q
 
 
 class Node:
@@ -130,9 +129,8 @@ def isValid(maze, mazelength, x, y):
     if x >= mazelength or x < 0 or y >= mazelength or y < 0:  # is it out of bounds?
         return False
     # is it on fire and NOT in fringe?
-    if maze[x][y].status == "open" and maze[x][y].visit == "no" and not maze[x][y].q:
+    if maze[x][y].status == "open" and maze[x][y].visit == "no":
         return True
-    print(maze[x][y].status, maze[x][y].visit, x, y)
     return False
 
 
@@ -169,33 +167,30 @@ def DFS(maze, mazelength, sx, sy, gx, gy):
     startNode = Node(sx, sy, None, None)
     stack = []
     stack.append(startNode)
-    maze[sx][sy].q = True
+    maze[sx][sy].visit = "yes"
     prioQ = directionPrio(sx, sy, gx, gy)
 
     while len(stack) != 0:  # While stack isn't empty
         node = stack.pop()
-        maze[node.x][node.y].visit = "yes"
         if node.x == gx and node.y == gy:
             return node
-        for i in reversed(
-            prioQ
-        ):  # Append new nodes to stack in (reverse) order, lower prio appended first
+        for i in reversed(prioQ):  # Append new nodes to stack in (reverse) order, lower prio appended first
             if i == "r":
                 if isValid(maze, mazelength, node.x + 1, node.y):
                     stack.append(Node(node.x + 1, node.y, node, None))
-                    maze[node.x + 1][node.y].q = True
+                    maze[node.x + 1][node.y].visit = "yes"
             elif i == "l":
                 if isValid(maze, mazelength, node.x - 1, node.y):
                     stack.append(Node(node.x - 1, node.y, node, None))
-                    maze[node.x - 1][node.y].q = True
+                    maze[node.x - 1][node.y].visit = "yes"
             elif i == "u":
                 if isValid(maze, mazelength, node.x, node.y - 1):
                     stack.append(Node(node.x, node.y - 1, node, None))
-                    maze[node.x][node.y - 1].q = True
+                    maze[node.x][node.y - 1].visit = "yes"
             else:
                 if isValid(maze, mazelength, node.x, node.y + 1):
                     stack.append(Node(node.x, node.y + 1, node, None))
-                    maze[node.x][node.y + 1].q = True
+                    maze[node.x][node.y + 1].visit = "yes"
     return None
 
 
@@ -410,9 +405,96 @@ def strat2(maze, q):
     return True, answer
 
 
-def strat3(maze):
+# Checks if fire is within n blocks (manhattan distance)
+def checkFire(maze,currx,curry,n):
+    mazelength = len(maze)
+    for i in range(currx-n,currx+n):
+        for j in range(curry-(n-i),curry+(n-i)):
+            if (i>-1 and i<mazelength) and (j>-1 and j<mazelength):
+                if maze[i][j].status == "fire":
+                    return True
+    return False
 
+
+# Gives probability of a target MazeUnit being on fire given probabilities a,b,c,d of the surrounding squares being on fire (q is fire spreading rate)
+def fireProb(q,a,b,c,d):
+    out = [q * (a*(1-b)*(1-c)*(1-d) + (1-a)*b*(1-c)*(1-d) + (1-a)*(1-b)*c*(1-d) + (1-a)*(1-b)*(1-c)*d)
+    + (1-(1-q)**2) * (a*b*(1-c)*(1-d) + a*(1-b)*c*(1-d) + a*(1-b)*(1-c)*d + (1-a)*b*c*(1-d) + (1-a)*b*(1-c)*d + (1-a)*(1-b)*c*d)
+    + (1-(1-q)**3) * (a*b*c*(1-d) + a*b*(1-c)*d + a*(1-b)*c*d + (1-a)*b*c*d)
+    + (1-(1-q)**4) * a*b*c*d]
+    return out
+
+
+# Sets fire probabilities and t20 values within m blocks of (currx,curry)
+def setFireProb(q,maze,currx,curry,m):
+    count = 0
+    probMatrix = np.zeros((2*m+1,2*m+1)) # Matrix that represents the probability region around our agent
+    offsetx, offsety = currx-m, curry-m # (0,0) of probMatrix corresponds to top left corner of maze area
+    #! while this (2m+1)x(2m+1) maze area isn't filled with t20 values
+    for i in range(currx-m,currx+m):
+        for j in range(curry-m,curry+m):
+            if (i>-1 and i<len(maze)) and (j>-1 and j<len(maze)):
+                if maze[i][j].status == "fire":
+                    probMatrix[i-offsetx][j-offsety] = 1.0
+                elif maze[i][j].status == "open":
+                    # Check surrounding maze blocks for probabilities
+                    a, b, c, d = 0.0, 0.0, 0.0, 0.0
+                    if (i+1-offsetx)<(2*m+1) and maze[i+1][j].status == "open":
+                        a = probMatrix[i+1-offsetx][j-offsety]
+                    if (i-1-offsetx)>-1 and maze[i-1][j].status == "open":
+                        b = probMatrix[i-1-offsetx][j-offsety]
+                    if (j+1-offsety)<(2*m+1) and maze[i][j+1].status == "open":
+                        c = probMatrix[i-offsetx][j+1-offsety]
+                    if (j-1-offsety)>-1 and maze[i][j-1].status == "open":
+                        d = probMatrix[i-offsetx][j-1-offsety]
+                    # Calculate probability of Maze(i,j) to be on fire
+                    probMatrix[i-offsetx][j-offsety] = fireProb(q,a,b,c,d)
     return
+
+
+def clearFireProb(maze,currx,curry,m):
+    for i in range(currx-m,currx+m):
+        for j in range(curry-m,curry+m):
+            if (i>-1 and i<len(maze)) and (j>-1 and j<len(maze)):
+                maze[i][j].p20 = 0
+
+
+# Return the goal node
+def strat3(maze,q):
+    path = []
+    mazelength = len(maze)
+    agent = Node(0,0)
+    ptr , _ = BFS(maze,Node(0,0),mazelength-1,mazelength-1)
+    
+    # Traverses up from goal node produced by BFS, adding to path in reverse
+    while ptr.parent != None:
+        path.insert(0,ptr)
+        ptr = ptr.parent
+
+    # While our agent isn't dead
+    while maze[agent.x][agent.y].status != "fire":
+        # If person gets too close to fire (x blocks)
+	    # 	Recalc like start 2, cleanse maze!
+	    # 	Do strat with start 1 pathing
+        n = 4
+        if checkFire(maze,agent.x,agent.y,n) == True:
+            maze = cleanse_maze(maze)
+            # Create probability heuristic within 5? blocks
+            # Add nodes to path by probability, then dist.
+            # Create circle "wall"?
+
+        # Move to next spot on path and check for goal
+        newLoc = path.pop(0)
+        if (newLoc.x == mazelength-1) and (newLoc.y == mazelength-1):
+            return True
+        agent.x = newLoc.x
+        agent.y = newLoc.y
+
+        # Advance fire
+        maze = advFire(maze,q)
+    
+    # Agent has died by default
+    return False
 
 
 ###################################################################################################################

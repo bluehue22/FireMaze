@@ -49,19 +49,20 @@ def listReverse(ptr):
 def mazePrint(maze):
     mazelength = len(maze)
     for i in range(mazelength):
-        print("")
+        print()
         for j in range(mazelength):
             if maze[i][j].status == "open":
                 if maze[i][j].visit == "on":
-                    print("@", end=" ")
+                    print("😄", end=" ")
                 elif maze[i][j].visit == "yes":
-                    print("#", end=" ")
+                    print("✨", end=" ")
                 else:
-                    print("O", end=" ")
+                    print("🟩", end=" ")
             elif maze[i][j].status == "fire":
-                print("F", end=" ")
+                print("🔥", end=" ")
             else:
-                print("X", end=" ")
+                print("⬛", end=" ")
+    print()
 
 
 def fringePrint(fringe):
@@ -365,18 +366,27 @@ def advFire(maze, q):
 def makeFireMaze(mazelength, density):
     while True:
         maze = makeMaze(mazelength, density)
+        # can I get to the end
         if DFS(maze, len(maze), 0, 0, len(maze) - 1, len(maze) - 1) != None:
             break
-    maze = cleanse_maze(maze)
+
     while True:
+        maze = cleanse_maze(maze)
         x = random.randint(0, len(maze) - 1)
         y = random.randint(0, len(maze) - 1)
+        # place fire on open square
         if maze[x][y].status == "open":
+            # fire cant not start at end or start
             if not (x == y and x == 0) and not (x == y and x == len(maze) - 1):
+                # check if fire can reach player
                 if DFS(maze, len(maze), 0, 0, x, y) != None:
                     maze[x][y].status = "fire"
                     maze = cleanse_maze(maze)
-                    return maze
+                    # can you still make it out
+                    if DFS(maze, len(maze), 0, 0, len(maze) - 1, len(maze) - 1) != None:
+                        maze = cleanse_maze(maze)
+                        return maze
+                    maze[x][y].status = "open"
 
 
 # send valid fire maze will return (true and goal node) or (False and last node of fail)
@@ -384,7 +394,6 @@ def strat1(maze, q):
     ptr, _ = BFS(maze, Node(0, 0), len(maze) - 1, len(maze) - 1)
     maze = cleanse_maze(maze)
     ptr = listReverse(ptr)
-    # listPrint(ptr)
     while ptr.child != None:
         maze[ptr.x][ptr.y].visit = "yes"
         ptr = ptr.child
@@ -392,41 +401,72 @@ def strat1(maze, q):
         maze = advFire(maze, q)
 
         if isValid(maze, len(maze), ptr.x, ptr.y) == False:
-            print("we failed going to", ptr.x, ptr.y)
-            print("-----------------")
-            mazePrint(maze)
-            # print("u at ", ptr.x, ptr.y)
-            print("-----------------")
+            print("we failed going to", ptr.x, ptr.y)  # benton
+            print("-----------------")  # benton
+            mazePrint(maze)  # benton
+            print("-----------------")  # benton
             return False, ptr
         maze[ptr.x][ptr.y].visit = "on"
-        print("-----------------")
-        mazePrint(maze)
-        # print("u at ", ptr.x, ptr.y)
-        print("-----------------")
+        print("-----------------")  # benton
+        mazePrint(maze)  # benton
+        print("-----------------")  # benton
     if ptr.x == len(maze) - 1 and ptr.y == len(maze) - 1:
         return True, ptr
-    # print("last coord", ptr.x, ptr.y)
     return False, ptr
 
 
 # send valid fire maze will return (true and goal node) or (False and last node of fail)
 def strat2(maze, q):
-    ptr = BFS(maze, Node(0, 0), len(maze) - 1, len(maze) - 1)[0]
+    ptr, _ = BFS(maze, Node(0, 0), len(maze) - 1, len(maze) - 1)
+    maze = cleanse_maze(maze)
     ptr = listReverse(ptr)
-    answer = Node(ptr.x, ptr.y)  # returns path taken
-
-    while ptr.child != None:
+    answer = Node(ptr.x, ptr.y)
+    # returns path taken
+    while True:
+        print("start", ptr.x, ptr.y)
         ptr = ptr.child
+        print("child", ptr.x, ptr.y)
         maze = advFire(maze, q)
         answer.child = Node(ptr.x, ptr.y, answer)
         answer = answer.child
         if isValid(maze, len(maze), ptr.x, ptr.y) == False:
+            print("we failed going to", ptr.x, ptr.y)  # benton
+            print("-----------------")  # benton
+            mazePrint(maze)  # benton
+            print("-----------------")  # benton
             return False, answer
-        ptr = BFS(maze, Node(ptr.x, ptr.y), len(maze) - 1, len(maze) - 1)[0]
+        #! maze[ptr.x][ptr.y].visit = "on"
+        print("-----------------")  # benton
+        maze[ptr.x][ptr.y].visit = "on"
+        mazePrint(maze)  # benton
+        maze[ptr.x][ptr.y].visit = "no"
+        print("-----------------")  # benton
+        ptr, _ = BFS(maze, Node(ptr.x, ptr.y), len(maze) - 1, len(maze) - 1)
+
+        maze = cleanse_maze(maze)
         if ptr == None:
+            print("There is no path anymore")
             return False, answer
         ptr = listReverse(ptr)
-    return True, answer
+        if ptr.x == len(maze) - 1 and ptr.y == len(maze) - 1:
+            return True, answer
+    # return False, answer
+    # ptr = BFS(maze, Node(0, 0), len(maze) - 1, len(maze) - 1)[0]
+    # ptr = listReverse(ptr)
+    # answer = Node(ptr.x, ptr.y)  # returns path taken
+
+    # while ptr.child != None:
+    #     ptr = ptr.child
+    #     maze = advFire(maze, q)
+    #     answer.child = Node(ptr.x, ptr.y, answer)
+    #     answer = answer.child
+    #     if isValid(maze, len(maze), ptr.x, ptr.y) == False:
+    #         return False, answer
+    #     ptr = BFS(maze, Node(ptr.x, ptr.y), len(maze) - 1, len(maze) - 1)[0]
+    #     if ptr == None:
+    #         return False, answer
+    #     ptr = listReverse(ptr)
+    # return True, answer
 
 
 # Checks if fire is within n blocks (manhattan distance)
@@ -634,22 +674,22 @@ def strat3(maze, q):
 # x = limitTesting(6000, 100, "DFS")  # A*,BSF,DFS
 # print("BFS Final Result: {}".format(x))
 
-# # Strat 1 and 2 test code
-# mazelength = 10
-# density = 0.3
-# q = 0.1
-# maze = makeFireMaze(mazelength, density)
-# # maze = makeMaze(mazelength, density)
-# print("first maze")
+# Strat 1 and 2 test code
+mazelength = 10
+density = 0.4
+q = 0.1
+maze = makeFireMaze(mazelength, density)
+# maze = makeMaze(mazelength, density)
+print("first maze")
+mazePrint(maze)
+
+# end, _ = BFS(maze, Node(0, 0), mazelength - 1, mazelength - 1)
+
+path, end = strat2(maze, 0.2)
+if path:
+    listPrint(end)
+    print("we did it")
+else:
+    listPrint(end)
+    print("we died")
 # mazePrint(maze)
-
-# # end, _ = BFS(maze, Node(0, 0), mazelength - 1, mazelength - 1)
-
-# path, end = strat1(maze, 0.2)
-# if path:
-#     listPrint(end)
-#     print("we did it")
-# else:
-#     listPrint(end)
-#     print("we died")
-# # mazePrint(maze)

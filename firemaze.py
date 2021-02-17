@@ -435,7 +435,6 @@ def strat2(maze, q):
             mazePrint(maze)  # benton
             print("-----------------")  # benton
             return False, answer
-        #! maze[ptr.x][ptr.y].visit = "on"
         print("-----------------")  # benton
         maze[ptr.x][ptr.y].visit = "on"
         mazePrint(maze)  # benton
@@ -674,22 +673,22 @@ def strat3(maze, q):
 # x = limitTesting(6000, 100, "DFS")  # A*,BSF,DFS
 # print("BFS Final Result: {}".format(x))
 
-# Strat 1 and 2 test code
-mazelength = 10
-density = 0.4
-q = 0.1
-maze = makeFireMaze(mazelength, density)
-# maze = makeMaze(mazelength, density)
-print("first maze")
-mazePrint(maze)
-
-# end, _ = BFS(maze, Node(0, 0), mazelength - 1, mazelength - 1)
-
-path, end = strat2(maze, 0.2)
-if path:
-    listPrint(end)
-    print("we did it")
-else:
-    listPrint(end)
-    print("we died")
+# # Strat 1 and 2 test code
+# mazelength = 10
+# density = 0.4
+# q = 0.1
+# maze = makeFireMaze(mazelength, density)
+# # maze = makeMaze(mazelength, density)
+# print("first maze")
 # mazePrint(maze)
+
+# # end, _ = BFS(maze, Node(0, 0), mazelength - 1, mazelength - 1)
+
+# path, end = strat2(maze, 0.2)
+# if path:
+#     listPrint(end)
+#     print("we did it")
+# else:
+#     listPrint(end)
+#     print("we died")
+# # mazePrint(maze)

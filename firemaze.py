@@ -358,11 +358,12 @@ def strat1():
 
 
 def strat2():
-    #THIS IS BFS BUT UPDATED EVERY TURN
+    # THIS IS BFS BUT UPDATED EVERY TURN
     return
 
 
 def strat3():
+
     return
 
 
@@ -438,9 +439,9 @@ def strat3():
 # plt.show()
 
 ##ANDREWS A STAR RECHECK
-# maze = makeMaze(5, 1)
+maze = makeMaze(10, 0.3)
 # A_star_goal_Node, A_star_nodes_searched = A_star(maze, Node(0, 0), 5 - 1, 5 - 1)
-# mazePrint(maze)
+mazePrint(maze)
 # print(A_star_nodes_searched)
 
 

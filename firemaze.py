@@ -664,6 +664,8 @@ def strat3(maze, q):
     # Use BFS to establish an initial "guess" path
     ptr, _ = BFS(maze, Node(0, 0), mazelength - 1, mazelength - 1)
     maze = cleanse_maze(maze)
+    if(ptr == None):
+        return False
     # Traverses up from goal node produced by BFS, adding to path in reverse
     while ptr.parent != None:
         path.insert(0, ptr)
@@ -808,22 +810,23 @@ def strat3(maze, q):
 
 
 # Strat 1,2,3 plot code
-mazelength = 10
+mazelength = 20
 density = 0.3
 q = 0
 qStep = 0.01
 strat1SuccessProb = []
 strat2SuccessProb = []
 strat3SuccessProb = []
-
-while q <= 1:  # benton IS A FOOL step must be int here so we cant use range
+qlist = []
+while q <= 1:
     successes1 = 0
     successes2 = 0
     successes3 = 0
+    qlist.append(q)
     print(q)
     #! WE NEED TO RESET FIRE 10X PER MAZE
     # benton i got u fam
-    for i in range(10):  # 10 maze per q value
+    for i in range(20):  # 20 maze per q value
         maze = makeFireMaze(mazelength, density)
         for j in range(10):  # 10 different fire loc
             temp = copy.deepcopy(maze)
@@ -844,10 +847,11 @@ while q <= 1:  # benton IS A FOOL step must be int here so we cant use range
     strat2SuccessProb.append(qProb2)
     strat3SuccessProb.append(qProb3)
     q += qStep
+
 plt.xlabel("Fire Spread (q)")
 plt.ylabel("Successes")
-plt.plot(range(0, 1, qStep), strat1SuccessProb, color="red", label="Strategy 1")
-plt.plot(range(0, 1, qStep), strat2SuccessProb, color="blue", label="Strategy 2")
-plt.plot(range(0, 1, qStep), strat3SuccessProb, color="orange", label="Strategy 3")
+plt.plot(qlist, strat1SuccessProb, color="red", label="Strategy 1")
+plt.plot(qlist, strat2SuccessProb, color="blue", label="Strategy 2")
+plt.plot(qlist, strat3SuccessProb, color="orange", label="Strategy 3")
 plt.legend(loc="best")
 plt.show()

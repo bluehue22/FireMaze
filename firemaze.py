@@ -427,15 +427,8 @@ def strat1(maze, q):
         maze = advFire(maze, q)
         # check if we die
         if isValid(maze, len(maze), ptr.x, ptr.y) == False:
-            # print("we failed going to", ptr.x, ptr.y)  # benton
-            # print("-----------------")  # benton
-            # mazePrint(maze)  # benton
-            # print("-----------------")  # benton
             return False, ptr
         maze[ptr.x][ptr.y].visit = "on"
-        # print("-----------------")  # benton
-        # mazePrint(maze)  # benton
-        # print("-----------------")  # benton
     # if we get to the goal
     if ptr.x == len(maze) - 1 and ptr.y == len(maze) - 1:
         return True, ptr
@@ -459,16 +452,7 @@ def strat2(maze, q):
         answer.child = Node(ptr.x, ptr.y, answer)
         answer = answer.child
         if isValid(maze, len(maze), ptr.x, ptr.y) == False:
-            # print("we failed going to", ptr.x, ptr.y)  # benton
-            # print("-----------------")  # benton
-            # mazePrint(maze)  # benton
-            # print("-----------------")  # benton
             return False, answer
-        # print("-----------------")  # benton
-        # maze[ptr.x][ptr.y].visit = "on"  # benton
-        # mazePrint(maze)  # benton
-        # maze[ptr.x][ptr.y].visit = "no"  # benton
-        # print("-----------------")  # benton
 
         # compute path again
         ptr, _ = BFS(maze, Node(ptr.x, ptr.y), len(maze) - 1, len(maze) - 1)
@@ -804,48 +788,78 @@ def strat3(maze, q):
 
 
 # Strat 1,2,3 plot code
-# mazelength = 25
-# density = 0.3
-# q = 0
-# qStep = 0.01
-# numMazes = 25
-# numFireLoc = 10
-# strat1SuccessProb = []
-# strat2SuccessProb = []
-# strat3SuccessProb = []
-# qlist = []
-# while q <= 1:
-#     successes1 = 0
-#     successes2 = 0
-#     successes3 = 0
-#     qlist.append(q)
-#     print(q)
-#     for i in range(numMazes):  # 20 maze per q value
-#         maze = makeFireMaze(mazelength, density)
-#         for j in range(numFireLoc):  # 10 different fire loc
-#             temp = copy.deepcopy(maze)
-#             if strat1(temp, q)[0]:
-#                 successes1 += 1
-#             temp = copy.deepcopy(maze)
-#             if strat2(temp, q)[0]:
-#                 successes2 += 1
-#             temp = copy.deepcopy(maze)
-#             if strat3(temp, q):
-#                 successes3 += 1
-#             maze = extinguish(maze)
-#             maze = placeFire(maze)
-#     qProb1 = float(successes1 / (numFireLoc * numMazes))
-#     qProb2 = float(successes2 / (numFireLoc * numMazes))
-#     qProb3 = float(successes3 / (numFireLoc * numMazes))
-#     strat1SuccessProb.append(qProb1)
-#     strat2SuccessProb.append(qProb2)
-#     strat3SuccessProb.append(qProb3)
-#     q += qStep
+mazelength = 25  # 20 for time
+density = 0.3
+q = 0
+qStep = 0.01
+numMazes = 25  # 10 for time
+numFireLoc = 10
+# average number of successes per q
+strat1SuccessProb, strat2SuccessProb, strat3SuccessProb = [], [], []
+# average time per q
+strat1_times, strat2_times, strat3_times = [], [], []
 
-# plt.xlabel("Fire Spread (q)")
-# plt.ylabel("Successes")
-# plt.plot(qlist, strat1SuccessProb, color="red", label="Strategy 1")
-# plt.plot(qlist, strat2SuccessProb, color="blue", label="Strategy 2")
-# plt.plot(qlist, strat3SuccessProb, color="orange", label="Strategy 3")
-# plt.legend(loc="best")
-# plt.show()
+qlist = []
+# tests q at increments of qStep until q < 1
+while q <= 1:
+    successes1 = 0
+    successes2 = 0
+    successes3 = 0
+    time_total1, time_total2, time_total3 = 0, 0, 0
+    qlist.append(q)
+    print(q)
+    # numMazes is the number of mazes made per q
+    for i in range(numMazes):  # 20 maze per q value
+        maze = makeFireMaze(mazelength, density)
+        # numFireLoc is the number of times the fire is relocated
+        for j in range(numFireLoc):  # 10 different fire loc
+            # deep copy maze so each strat has the same maze
+            temp = copy.deepcopy(maze)
+            t0 = time.time()
+            if strat1(temp, q)[0]:
+                successes1 += 1
+            t1 = time.time()
+            time_total1 += t1 - t0
+            temp = copy.deepcopy(maze)
+            t0 = time.time()
+            if strat2(temp, q)[0]:
+                successes2 += 1
+            t1 = time.time()
+            time_total2 += t1 - t0
+            t0 = time.time()
+            temp = copy.deepcopy(maze)
+            if strat3(temp, q):
+                successes3 += 1
+            t1 = time.time()
+            time_total3 += t1 - t0
+            # get rid of all the fire and place it again
+            maze = extinguish(maze)
+            maze = placeFire(maze)
+    # make all prob an average
+    qProb1 = float(successes1 / (numFireLoc * numMazes))
+    qProb2 = float(successes2 / (numFireLoc * numMazes))
+    qProb3 = float(successes3 / (numFireLoc * numMazes))
+    strat1SuccessProb.append(qProb1)
+    strat2SuccessProb.append(qProb2)
+    strat3SuccessProb.append(qProb3)
+    # make all times an average
+    strat1_times.append(time_total1 / (numFireLoc * numMazes))
+    strat2_times.append(time_total2 / (numFireLoc * numMazes))
+    strat3_times.append(time_total3 / (numFireLoc * numMazes))
+    q += qStep
+# output the success rate graph
+plt.xlabel("Fire Spread (q)")
+plt.ylabel("Successes")
+plt.plot(qlist, strat1SuccessProb, color="red", label="Strategy 1")
+plt.plot(qlist, strat2SuccessProb, color="blue", label="Strategy 2")
+plt.plot(qlist, strat3SuccessProb, color="orange", label="Strategy 3")
+plt.legend(loc="best")
+plt.show()
+# output the average time graph
+plt.xlabel("Fire Spread (q)")
+plt.ylabel("Average Times (seconds)")
+plt.plot(qlist, strat1_times, color="red", label="Strategy 1")
+plt.plot(qlist, strat2_times, color="blue", label="Strategy 2")
+plt.plot(qlist, strat3_times, color="orange", label="Strategy 3")
+plt.legend(loc="best")
+plt.show()
